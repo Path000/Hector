@@ -1,0 +1,33 @@
+
+<html>
+<head></head>
+<body>
+<canvas id="canvas" width="150" height="150"></canvas>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+	var canvas = document.getElementById("canvas");
+	var ctx = canvas.getContext("2d");
+	ctx.fillStyle = "rgb(200,200,200)";
+	ctx.fillRect (0, 0, 150, 150);
+	ctx.fillStyle = "rgb(0,0,0)";
+	var xMid = 150/2;
+	var yMid = 150/2;
+
+	function drawFromPolar(angle, dist) {
+		var x = Math.floor(xMid + dist*Math.cos(angle));
+		let y = Math.floor(yMid + dist*Math.sin(angle));
+		//console.log('x:'+x+' y:'+y);
+		ctx.fillRect (x, y, 1, 1);
+	}
+
+	var socket = io.connect('http://localhost:8080');
+	socket.on('meas', function (data) {
+		//console.log(data);
+		drawFromPolar(data.angle, data.distA);
+		drawFromPolar(data.angle+(Math.PI/2), data.distB);
+		drawFromPolar(data.angle+(Math.PI), data.distC);
+		drawFromPolar(data.angle+(Math.PI/2*3), data.distD);
+	});
+</script>
+</body>
+</html>
