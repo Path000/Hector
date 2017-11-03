@@ -31,7 +31,8 @@ int state;
 long instantSpeedA = 0L;
 long instantSpeedB = 0L;
 byte controlB = 0;
-long distanceTraveled = 0L;
+long distanceTraveledA = 0L;
+long distanceTraveledB = 0L;
 unsigned long lastSampleTime = 0L;
 
 // Compteurs des roues codeuses
@@ -119,13 +120,14 @@ void updateMotorControl() {
   // décélération à l'arrivée.
   // les 2 moteurs doivent aller à la même vitesse.
   // => La vitesse de B est ajustée fonction de la différence entre A et B
-  // Un PID maison avec uniquement la composante proportionnelle
 
-  if (distanceTraveled >= distanceToTravel) {
+  if (distanceTraveledA >= distanceToTravel) {
     // On est arrivé
     Serial.print("FINISHED");
     Serial.print(SEPARATOR);
-    Serial.print(distanceTraveled); // donner la distance réelle parcourue.
+    Serial.print(distanceTraveledA); // donner la distance réelle parcourue.
+    Serial.print(SEPARATOR);
+    Serial.print(distanceTraveledB); // donner la distance réelle parcourue.
     Serial.println("");
     doMotorStop();
     return;
@@ -133,30 +135,52 @@ void updateMotorControl() {
 
   // On construit une courbe en triangle pointe en haut à mi-parcours.
   long theoricalControl = 0L;
-  if(distanceTraveled < distanceToTravel / 2) {
+  if(distanceTraveledA < distanceToTravel / 2) {
     // On accélère jusqu'à mi parcours
-    theoricalControl = distanceTraveled * acceleration;
+    theoricalControl = distanceTraveledA * acceleration;
   }
   else {
     // on décélère à mi parcours
-    theoricalControl = (distanceToTravel - distanceTraveled) * acceleration;
+    theoricalControl = (distanceToTravel - distanceTraveledA) * acceleration;
   }
 
   // On écrête A
   byte controlA = constrain(theoricalControl, minSpeed, maxSpeed);
-  // Contrôle de B.
+  // Contrôle de B proportionnel
   // setPoint : instantSpeedA
   // input : instantSpeedB
   long errorB = instantSpeedA - instantSpeedB;
+  // Contrôle de B intégral
+  long errorCumulB = distanceTraveledA - distanceTraveledB;
   // rapport constaté sur le moteur B entre pwm et ticks
-  float KP = controlB / instantSpeedB;
-  int theoricalControlB = controlA + int(errorB * KP);
+  //float K = controlB / instantSpeedB;
+  int theoricalControlB = controlA + int((errorB + errorCumulB) * 0.9);
   // On écrête aussi B
   controlB = constrain(theoricalControlB, 0, 255);
  
   analogWrite(PIN_PWMA, controlA);
   analogWrite(PIN_PWMB, controlB);
+
+/*
+  Serial.print(distanceTraveledA, DEC);
+  Serial.print(", ");
+  Serial.print(distanceTraveledB, DEC);
+  Serial.print(", ");
+  Serial.print(errorB, DEC);
+  Serial.print(", ");
+  Serial.print(errorCumulB, DEC);
+  Serial.print(", ");
+  Serial.print(controlA, DEC);
+  Serial.print(", ");
+  Serial.print(controlB, DEC);
+  Serial.println();
+*/
 }
+
+
+/*
+MOVE:1:6000:0.09:15:80
+*/
 
 /*
   Format : COMMAND:value[:value[:value[...]]]
@@ -198,7 +222,8 @@ void parseAndDispatch(String dataFromPI) {
     state = STATE_MOVING;
     counterA = 0L;
     counterB = 0L;
-    distanceTraveled = 0L;
+    distanceTraveledA = 0L;
+    distanceTraveledB = 0L;
     lastSampleTime = 0L;
     distanceToTravel = arrayArgs[1].toInt();
     acceleration = arrayArgs[2].toFloat();
@@ -208,19 +233,19 @@ void parseAndDispatch(String dataFromPI) {
     switch (direction) {
       case MOVE_FORWARD :
         digitalWrite(PIN_DIRA, LOW);
-        digitalWrite(PIN_DIRB, HIGH);
+        digitalWrite(PIN_DIRB, LOW);
         break;
       case MOVE_BACKWARD :
         digitalWrite(PIN_DIRA, HIGH);
-        digitalWrite(PIN_DIRB, LOW);
+        digitalWrite(PIN_DIRB, HIGH);
         break;
       case TURN_LEFT :
         digitalWrite(PIN_DIRA, LOW);
-        digitalWrite(PIN_DIRB, LOW);
+        digitalWrite(PIN_DIRB, HIGH);
         break;
       case TURN_RIGHT :
         digitalWrite(PIN_DIRA, HIGH);
-        digitalWrite(PIN_DIRB, HIGH);
+        digitalWrite(PIN_DIRB, LOW);
         break;
     }
   }
@@ -251,9 +276,10 @@ void loop() {
       unsigned long deltaTime = now - lastSampleTime;
       if(deltaTime >= SAMPLE_DELAY) {
         lastSampleTime = now;
-        distanceTraveled += counterA;
-        instantSpeedA = counterA;
-        instantSpeedB = counterB;
+        distanceTraveledA += abs(counterA);
+        distanceTraveledB += abs(counterB);
+        instantSpeedA = abs(counterA);
+        instantSpeedB = abs(counterB);
         counterA = 0L;
         counterB = 0L;
         updateMotorControl();
