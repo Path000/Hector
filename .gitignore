@@ -1,3 +1,7 @@
+_config.yml
+package-lock.json
+sample.txt
+
 .DS_Store/
 .DS_Store
 # Logs
