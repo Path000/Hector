@@ -1,7 +1,7 @@
 
 // Serial message parser
 #define SEPARATOR ':'
-#define MAX_ARGS 2
+#define MAX_ARGS 5
 
 // PINS
 #define PIN_ENCA_CHANA 2 // interrupt 0
@@ -23,7 +23,17 @@ int state;
 #define TURN_LEFT 3
 #define TURN_RIGHT 4
 
-long distance;
+long distanceToTravel = 0L;
+long instantSpeedA = 0L;
+long instantSpeedB = 0L;
+byte controlB = 0;
+
+volatile long counterA = 0L;
+volatile long counterB = 0L;
+
+float slope = 0;
+byte maxSpeed = 0;
+byte minSpeed = 0;
 
 /*
     Wiring
@@ -46,9 +56,6 @@ long distance;
    arduino long : (4 bytes), from -2,147,483,648 to 2,147,483,647.
    soit 63796170618,018622864075955 mm max en comptant les ticks
 */
-
-volatile long counterA = 0L;
-volatile long counterB = 0L;
 
 // moteur gauche
 // pin channel A : 2 (interrupt)
@@ -83,38 +90,67 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(PIN_ENCA_CHANA), interruptOnRaisingA, RISING);
   attachInterrupt(digitalPinToInterrupt(PIN_ENCB_CHANA), interruptOnRaisingB, RISING);
 
-  state = STATE_STOPED;
+  doMotorStop();
 
   // L'ouverture du port USB par le PI reset l'arduino.
   // On prévient quand on est up à nouveau.
   Serial.println("READY");
 }
 
-void doMotorMove() {
+void doMotorStop() {
+  state = STATE_STOPED;
+  analogWrite(PIN_PWMA, 0);
+  analogWrite(PIN_PWMB, 0);
+}
 
-  // TODO :
+void doMotorMove(long dt) {
+
+  // controle de la vitesse A :
   // accélération au démarrage.
   // décélération à l'arrivée.
   // les 2 moteurs doivent aller à la même vitesse.
+  // => La vitesse de B est ajustée fonction de la différence entre A et B
 
-  analogWrite(PIN_PWMA, 10);
-  analogWrite(PIN_PWMB, 10);
+  long currentDistance = abs(counterA);
 
-  long currentDistance = (abs(counterA)+abs(counterB))/2;
-  
-  if(currentDistance >= distance) {
-    counterA = 0L;
-    counterB = 0L;
-    state = STATE_STOPED;
-    Serial.println("FINISHED");
+  if (currentDistance >= distanceToTravel) {
+    // On est arrivé
+    Serial.print("FINISHED");
+    Serial.print(SEPARATOR);
+    Serial.print(currentDistance); // donner la distance réelle parcourue.
+    Serial.println("");
+    doMotorStop();
+    return;
   }
+
+  long theoricalControl = currentDistance * slope;
+  float topTheoricalControl = slope * distanceToTravel / 2;
+  if(currentDistance > distanceToTravel / 2) {
+    // on décélère à mi parcours
+    theoricalControl = theoricalControl - topTheoricalControl;
+  }
+
+  byte controlA = constrain(int(theoricalControl), minSpeed, maxSpeed);
+  long errorB = instantSpeedB - instantSpeedA;
+  float ratio = controlB / instantSpeedB;
+  int theoricalControlB = int(controlA + (errorB*ratio));
+  controlB = constrain(theoricalControlB, 0, 255);
+ 
+  analogWrite(PIN_PWMA, controlA);
+  analogWrite(PIN_PWMB, controlB);
+
+  
+
 }
 
 /*
   Format : COMMAND:value[:value[:value[...]]]
-  Command MOVE:dir:dist
-  Où dir : 0 ou 1 (avance, gauche / recule, droite)
-  dist : mm
+  Command MOVE:dir:dist:slope:minSpeed:maxSpeed
+  Où dir : (avance, gauche, recule, droite)
+  dist : ticks
+  slope : pente accélérarion et décération
+  minSpeed (0-255)
+  maxSpeed (0-255)
 */
 
 void parseAndDispatch(String dataFromPI) {
@@ -145,9 +181,14 @@ void parseAndDispatch(String dataFromPI) {
   }
   if (cmd == "MOVE") {
     state = STATE_MOVING;
-    distance = arrayArgs[1].toInt();
+    counterA = 0L;
+    counterB = 0L;
+    distanceToTravel = arrayArgs[1].toInt();
+    slope = arrayArgs[2].toFloat();
+    minSpeed = arrayArgs[3].toInt();
+    maxSpeed = arrayArgs[4].toInt();
     int direction = arrayArgs[0].toInt();
-    switch(direction) {
+    switch (direction) {
       case MOVE_FORWARD :
         digitalWrite(PIN_DIRA, LOW);
         digitalWrite(PIN_DIRB, HIGH);
@@ -167,9 +208,7 @@ void parseAndDispatch(String dataFromPI) {
     }
   }
   if (cmd == "STOP") {
-    state = STATE_STOPED;
-    analogWrite(PIN_PWMA, 0);
-    analogWrite(PIN_PWMB, 0);
+    doMotorStop();
   }
   if (cmd == "HELLO") {
     Serial.println("PROPULSION");
@@ -183,13 +222,19 @@ void loop() {
   if (Serial.available() > 0) {
     parseAndDispatch(Serial.readStringUntil('\n'));
   }
+
+  // TODO current speed
+  currentSpeed = 10L;
+  long dt;
+
   switch (state) {
 
     case STATE_STOPED :
+      // rien à faire
       break;
 
     case STATE_MOVING :
-      doMotorMove();
+      doMotorMove(dt);
       break;
   }
 }
