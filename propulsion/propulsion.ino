@@ -30,7 +30,6 @@ int state;
 // varaibles de calcul de mouvement
 long instantSpeedA = 0L;
 long instantSpeedB = 0L;
-byte controlB = 0;
 long distanceTraveledA = 0L;
 long distanceTraveledB = 0L;
 unsigned long lastSampleTime = 0L;
@@ -153,10 +152,9 @@ void updateMotorControl() {
   // Contrôle de B intégral
   long errorCumulB = distanceTraveledA - distanceTraveledB;
   // rapport constaté sur le moteur B entre pwm et ticks
-  //float K = controlB / instantSpeedB;
   int theoricalControlB = controlA + int((errorB + errorCumulB) * 0.9);
   // On écrête aussi B
-  controlB = constrain(theoricalControlB, 0, 255);
+  byte controlB = constrain(theoricalControlB, 0, 255);
  
   analogWrite(PIN_PWMA, controlA);
   analogWrite(PIN_PWMB, controlB);
