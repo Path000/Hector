@@ -13,25 +13,34 @@
 #define PIN_PWMA 10
 #define PIN_PWMB 11
 
+int state;
+
 #define STATE_STOPED 1
 #define STATE_MOVING 2
 
-int state;
-
+// Directions
 #define MOVE_FORWARD 1
 #define MOVE_BACKWARD 2
 #define TURN_LEFT 3
 #define TURN_RIGHT 4
 
-long distanceToTravel = 0L;
+
+#define SAMPLE_DELAY 100 // ms
+
+// varaibles de calcul de mouvement
 long instantSpeedA = 0L;
 long instantSpeedB = 0L;
 byte controlB = 0;
+long distanceTraveled = 0L;
+unsigned long lastSampleTime = 0L;
 
+// Compteurs des roues codeuses
 volatile long counterA = 0L;
 volatile long counterB = 0L;
 
-float slope = 0;
+// paramètres donnés
+long distanceToTravel = 0L;
+float acceleration = 0;
 byte maxSpeed = 0;
 byte minSpeed = 0;
 
@@ -103,52 +112,58 @@ void doMotorStop() {
   analogWrite(PIN_PWMB, 0);
 }
 
-void doMotorMove(long dt) {
+void updateMotorControl() {
 
   // controle de la vitesse A :
   // accélération au démarrage.
   // décélération à l'arrivée.
   // les 2 moteurs doivent aller à la même vitesse.
   // => La vitesse de B est ajustée fonction de la différence entre A et B
+  // Un PID maison avec uniquement la composante proportionnelle
 
-  long currentDistance = abs(counterA);
-
-  if (currentDistance >= distanceToTravel) {
+  if (distanceTraveled >= distanceToTravel) {
     // On est arrivé
     Serial.print("FINISHED");
     Serial.print(SEPARATOR);
-    Serial.print(currentDistance); // donner la distance réelle parcourue.
+    Serial.print(distanceTraveled); // donner la distance réelle parcourue.
     Serial.println("");
     doMotorStop();
     return;
   }
 
-  long theoricalControl = currentDistance * slope;
-  float topTheoricalControl = slope * distanceToTravel / 2;
-  if(currentDistance > distanceToTravel / 2) {
+  // On construit une courbe en triangle pointe en haut à mi-parcours.
+  long theoricalControl = 0L;
+  if(distanceTraveled < distanceToTravel / 2) {
+    // On accélère jusqu'à mi parcours
+    theoricalControl = distanceTraveled * acceleration;
+  }
+  else {
     // on décélère à mi parcours
-    theoricalControl = theoricalControl - topTheoricalControl;
+    theoricalControl = (distanceToTravel - distanceTraveled) * acceleration;
   }
 
-  byte controlA = constrain(int(theoricalControl), minSpeed, maxSpeed);
-  long errorB = instantSpeedB - instantSpeedA;
-  float ratio = controlB / instantSpeedB;
-  int theoricalControlB = int(controlA + (errorB*ratio));
+  // On écrête A
+  byte controlA = constrain(theoricalControl, minSpeed, maxSpeed);
+  // Contrôle de B.
+  // setPoint : instantSpeedA
+  // input : instantSpeedB
+  long errorB = instantSpeedA - instantSpeedB;
+  // rapport constaté sur le moteur B entre pwm et ticks
+  float KP = controlB / instantSpeedB;
+  int theoricalControlB = controlA + int(errorB * KP);
+  // On écrête aussi B
   controlB = constrain(theoricalControlB, 0, 255);
  
   analogWrite(PIN_PWMA, controlA);
   analogWrite(PIN_PWMB, controlB);
-
-  
-
 }
 
 /*
   Format : COMMAND:value[:value[:value[...]]]
-  Command MOVE:dir:dist:slope:minSpeed:maxSpeed
+  Command MOVE:dir:dist:acceleration:minSpeed:maxSpeed
   Où dir : (avance, gauche, recule, droite)
   dist : ticks
-  slope : pente accélérarion et décération
+  acceleration : pente accélérarion et décération
   minSpeed (0-255)
   maxSpeed (0-255)
 */
@@ -183,8 +198,10 @@ void parseAndDispatch(String dataFromPI) {
     state = STATE_MOVING;
     counterA = 0L;
     counterB = 0L;
+    distanceTraveled = 0L;
+    lastSampleTime = 0L;
     distanceToTravel = arrayArgs[1].toInt();
-    slope = arrayArgs[2].toFloat();
+    acceleration = arrayArgs[2].toFloat();
     minSpeed = arrayArgs[3].toInt();
     maxSpeed = arrayArgs[4].toInt();
     int direction = arrayArgs[0].toInt();
@@ -223,10 +240,6 @@ void loop() {
     parseAndDispatch(Serial.readStringUntil('\n'));
   }
 
-  // TODO current speed
-  currentSpeed = 10L;
-  long dt;
-
   switch (state) {
 
     case STATE_STOPED :
@@ -234,7 +247,17 @@ void loop() {
       break;
 
     case STATE_MOVING :
-      doMotorMove(dt);
+      unsigned long now = millis();
+      unsigned long deltaTime = now - lastSampleTime;
+      if(deltaTime >= SAMPLE_DELAY) {
+        lastSampleTime = now;
+        distanceTraveled += counterA;
+        instantSpeedA = counterA;
+        instantSpeedB = counterB;
+        counterA = 0L;
+        counterB = 0L;
+        updateMotorControl();
+      }
       break;
   }
 }
