@@ -5,20 +5,53 @@ const io = require('socket.io')(server);
 const path = require('path');
 
 const Arduino = require('./Arduino.js');
-const arduinoTourelle = new Arduino('/dev/ttyUSB0');
+let arduinoTourelle = undefined;
+let arduinoPropulsion = undefined;
+
+const arduinoUSB0 = new Arduino('/dev/ttyUSB0');
+const arduinoUSB1 = new Arduino('/dev/ttyUSB1');
 
 let arduinoTourelleReady = false;
+let arduinoPropulsionReady = false;
 
 let currentSocket = undefined;
 
-arduinoTourelle.on('READY', ()=>{
-	console.log('Tourelle ready');
-	arduinoTourelle.writeSerial('HELLO', console.log);
+arduinoUSB0.on('READY', ()=>{
+	console.log('arduinoUSB0 ready');
+	arduinoUSB0.writeSerial('HELLO', console.log);
+});
+arduinoUSB1.on('READY', ()=>{
+	console.log('arduinoUSB1 ready');
+	arduinoUSB1.writeSerial('HELLO', console.log);
 });
 
-arduinoTourelle.on('TOURELLE', ()=>{
+let startTourelle = (handler)=> {
+	arduinoTourelle = handler;
 	arduinoTourelleReady = true;
 	arduinoTourelle.writeSerial('START', console.log);
+}
+let startPropulsion = (handler)=> {
+	arduinoPropulsion = handler;
+	arduinoPropulsionReady = true;
+
+	// TODO
+}
+
+arduinoUSB0.on('TOURELLE', ()=>{
+	console.log('Arduino TOURELLE is on USB0');
+	startTourelle(arduinoUSB0);
+});
+arduinoUSB0.on('PROPULSION', ()=>{
+	console.log('Arduino PROPULSION is on USB0');
+	startPropulsion(arduinoUSB0);
+});
+arduinoUSB1.on('TOURELLE', ()=>{
+	console.log('Arduino TOURELLE is on USB1');
+	startTourelle(arduinoUSB1);
+});
+arduinoUSB1.on('PROPULSION', ()=>{
+	console.log('Arduino PROPULSION is on USB1');
+	startPropulsion(arduinoUSB1);
 });
 
 arduinoTourelle.on('MEAS', (data)=>{
@@ -33,6 +66,9 @@ arduinoTourelle.on('MEAS', (data)=>{
 	}
 });
 
+arduinoPropulsion.on('FINISHED', (data)=>{
+	console.log('MOVE FINISHED', data.args);
+});
 
 app.use('/', express.static(path.join(__dirname, 'html_root')));
 
