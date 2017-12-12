@@ -25,26 +25,26 @@ arduinoUSB1.on('READY', ()=>{
 	arduinoUSB1.writeSerial('HELLO', console.log);
 });
 
-let initTourelle = (arduinoHandler)=> {
+const initTourelle = (arduinoHandler)=> {
 	arduinoTourelle = arduinoHandler;
 	arduinoTourelleReady = true;
 
 	arduinoTourelle.writeSerial('START', console.log);
 
 	arduinoTourelle.on('MEAS', (data)=>{
-		if(currentSocket != undefined) {
 			
-			let msg = {};
-			msg.angle = data.args[0];
-			msg.distA = data.args[1];
-			msg.distB = data.args[2];
-			msg.distC = data.args[3];
-			msg.distD = data.args[4];
+		let msg = {};
+		msg.angle = data.args[0];
+		msg.distA = data.args[1];
+		msg.distB = data.args[2];
+		msg.distC = data.args[3];
+		msg.distD = data.args[4];
+		if(currentSocket != undefined) {
 			currentSocket.emit('meas', msg);
 		}
 	});
 }
-let initPropulsion = (arduinoHandler)=> {
+const initPropulsion = (arduinoHandler)=> {
 	arduinoPropulsion = arduinoHandler;
 	arduinoPropulsionReady = true;
 
@@ -84,7 +84,7 @@ io.on('connection', function (socket) {
 
 server.listen(8080);
 
-let exitHandler = (options, err)=> {
+const exitHandler = (options, err)=> {
   
 	if (err) console.log(err.message);
 
