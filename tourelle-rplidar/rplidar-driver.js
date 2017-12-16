@@ -29,12 +29,6 @@ const RESPONSES = {
 
 const HEALTH_STATUSES = ['Good', 'Warning', 'Error'];
 
-const hexToBinaryString = (hex) => {
-	return (hex >>> 0)
-		.toString(2)
-		.padStart(8, '0');
-}
-
 class RPLidarDriver extends EventEmitter {
 
 	constructor(path, motorPWMDuty) {
@@ -108,9 +102,9 @@ class RPLidarDriver extends EventEmitter {
 			const byte1 = this.dataBuffer[8];
 			const byte2 = this.dataBuffer[9];
 			const parsedData = {
-				statusCode: parseInt(byte0),
-				status: HEALTH_STATUSES[parseInt(`${hexToBinaryString(byte0)}`, 2)],
-				errorCode: parseInt(`${hexToBinaryString(byte2)}${hexToBinaryString(byte1)}`, 2)
+				statusCode: byte0,
+				status: HEALTH_STATUSES[byte0],
+				errorCode: (byte2 << 8) | byte1
 			};
 			this.emit('health', parsedData);
 		}
@@ -146,8 +140,46 @@ class RPLidarDriver extends EventEmitter {
 
 	parseExpressScanPayload() {
 		if (this.dataBuffer.length < RESPONSES.EXPRESS_SCAN.payloadLength) return;
-		// S flag at 1 : new scan -> reset Omega i
+
 		console.log(this.dataBuffer.slice(0, RESPONSES.EXPRESS_SCAN.payloadLength));
+
+		let packet = {};
+
+		let byte0 = this.dataBuffer[0];
+		let sync1 = (byte0 & 0xF0) >>> 4;
+		let chkSumLSB = byte0 & 0x0F;
+
+		let byte1 = this.dataBuffer[1];
+		let sync2 = (byte1 & 0xF0) >>> 4;
+		let chkSumMSB = byte1 & 0x0F;
+
+		if (sync1 != 0xA || sync2 != 0x5) {
+			console.log('Wrong sync values');
+			return;
+		}
+
+		packet.chkSum = (chkSumMSB << 4) | chkSumLSB;
+
+		let startAngleQ6LSB = this.dataBuffer[2];
+
+		let byte3 = this.dataBuffer[3];
+		let startAngleQ6MSB = byte3 & 0b01111111;
+
+		packet.startFlag = (byte3 & 0b10000000) >> 7;
+
+		packet.startAngle = ((startAngleQ6MSB << 8) | startAngleQ6LSB) / 64;
+
+		packet.cabin = [];
+
+		for (let index = 0; index < 16; index++) {
+			let buffCabin = this.dataBuffer.slice(index * 5 + 4, index * 5 + 9);
+			let cabin = {};
+
+			packet.cabin.push(buffCabin);
+		}
+
+		console.log(packet);
+
 		this.dataBuffer = this.dataBuffer.slice(RESPONSES.EXPRESS_SCAN.payloadLength);
 		setTimeout(this.parse, 0);
 	}
