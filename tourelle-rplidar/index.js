@@ -1,36 +1,21 @@
-const RPLidarDriver = require('./rplidar-driver.js');
+const RPLidarDriverSerialport = require('./rplidar-driver-serialport.js');
+const RPLidarDriverMotor = require('./rplidar-driver-motor.js')
+const RPLidarDriverRequest = require('./rplidar-driver-request.js')
+const RPLidarDriverResponse = require('./rplidar-driver-response.js')
 
-const lidar = new RPLidarDriver('/dev/ttyAMA0', 60);
-
-lidar.on('health', (data) => {
-	console.log(data);
-	if (data.statusCode != 0) {
-		console.log('Health is not good. Stopping ...');
-		exitFunction({
-			exit: true
-		});
-	}
-	setTimeout(() => {
-		lidar.getLidarInfo(() => {});
-	}, 10);
-});
-
-lidar.on('info', (data) => {
-	console.log(data);
-	setTimeout(() => {
-		lidar.startMotor(() => {
-			setTimeout(() => {
-				lidar.startExpressScan(() => {});
-			}, 3000)
-		});
-
-	}, 10);
-});
+const lidarPort = new RPLidarDriverSerialport('/dev/ttyAMA0');
+const lidarMotor = new RPLidarDriverMotor(18);
+const lidarResponse = new RPLidarDriverResponse(lidaPort);
+const lidarRequest = new RPLidarDriverRequest(lidarPort, lidarResponse);
 
 lidar.on('error', (err) => {
 	exitFunction({
 		exit: true
 	}, err);
+});
+
+lidarRequest.on('debug', (data) => {
+	console.log(data);
 });
 
 lidar.on('open', () => {
@@ -41,13 +26,47 @@ lidar.on('close', () => {
 	console.log('Port closed');
 });
 
-lidar.on('ready', () => {
-	console.log('Driver ready');
+lidarPort.open(() => {
+	setTimeout(() => {
+		lidarRequest.getLidarHealth((err) => {
+			exitFunction({
+				exit: true
+			}, err);
+		});
+	}, 10);
 });
 
-lidar.init(() => {
+lidarResponse.on('health', (data) => {
+	console.log(data);
+	if (data.statusCode != 0) {
+		console.log('Health is not good. Stopping ...');
+		exitFunction({
+			exit: true
+		});
+	}
 	setTimeout(() => {
-		lidar.getLidarHealth(() => {});
+		lidarRequest.getLidarInfo((err) => {
+			exitFunction({
+				exit: true
+			}, err);
+		});
+	}, 10);
+});
+
+lidarResponse.on('info', (data) => {
+	console.log(data);
+
+	setTimeout(() => {
+		lidarMotor.start(60);
+
+		setTimeout(() => {
+			lidarRequest.startExpressScan((err) => {
+				exitFunction({
+					exit: true
+				}, err);
+			});
+		}, 3000);
+
 	}, 10);
 });
 
@@ -57,10 +76,9 @@ const exitHandler = (options, err) => {
 
 const exitFunction = (options, err) => {
 	//clean all
-	if (lidar) {
-		lidar.stopMotor(() => {});
-		lidar.stopScan(() => {});
-	}
+	if (lidarMotor) lidarMotor.stop();
+	if (lidarRequest) lidarRequest.stopScan();
+	if (lidarPort) lidarPort.close();
 	if (options.cleanup) console.log('clean');
 	if (err) console.log(err.stack);
 	if (options.exit) process.exit();
