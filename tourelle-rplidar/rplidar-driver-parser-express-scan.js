@@ -4,10 +4,6 @@ const HEADER_SIZE = 4;
 
 const CABINS_SIZE = 80;
 
-const FIRST_PARSE = DESCRIPTOR_SIZE + HEADER_SIZE;
-
-const PAYLOAD_SIZE = CABINS_SIZE + HEADER_SIZE;
-
 const DESCRIPTOR = Buffer.from([0xA5, 0x5A, 0x54, 0x00, 0x00, 0x40, 0x82]);
 
 class RPLidarDriverParserExpressScan {
