@@ -43,28 +43,28 @@ class RPLidarDriverParserExpressScan {
 	parseCabinsAndNextHeader() {
 
 		if (!this.currentHeader) {
-			this.emit('error', new Error('this.currentHeader was not set'));
+			this.response.emit('error', new Error('this.currentHeader was not set'));
 			return;
 		}
 
 		if (this.currentHeader.sync1 != 0xA || this.currentHeader.sync2 != 0x5) {
-			this.emit('error', new Error(`Wrong sync values ${this.currentHeader.sync1} ${this.currentHeader.sync2}`));
+			this.response.emit('error', new Error(`Wrong sync values ${this.currentHeader.sync1} ${this.currentHeader.sync2}`));
 			return;
 		}
 
 		if (this.currentHeader.startFlag != 0) {
-			this.emit('debug', 'Start flag was true !');
+			this.response.emit('debug', 'Start flag was true !');
 		}
 
 		if (this.port.getBufferSize() < CABINS_SIZE + HEADER_SIZE) return;
 
-		this.emit('debug', `Buffer length : ${this.dataBuffer.length}`);
+		this.response.emit('debug', `Buffer length : ${this.dataBuffer.length}`);
 
 		const bufferCabins = this.port.consumeBuffer(CABINS_SIZE);
 		const bufferNextHeader = this.port.consumeBuffer(HEADER_SIZE)
 
 		if (this.computeCheckSum(this.currentHeader.buffer, bufferCabins) != this.currentHeader.checkSum) {
-			this.emit('error', new Error('Wrong check sum.'));
+			this.response.emit('error', new Error('Wrong check sum.'));
 			return;
 		}
 
@@ -89,8 +89,8 @@ class RPLidarDriverParserExpressScan {
 			scans.push(scan2);
 		}
 
-		this.emit('debug', this.currentHeader);
-		this.emit('scan', scans);
+		this.response.emit('debug', this.currentHeader);
+		this.response.emit('scan', scans);
 
 		this.currentHeader = nextHeader;
 		setTimeout(this.parse, 0);
