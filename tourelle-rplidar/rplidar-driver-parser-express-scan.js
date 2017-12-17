@@ -40,7 +40,9 @@ class RPLidarDriverParserExpressScan {
 
 			this.firstPacket = false;
 
-			setTimeout(this.parse, 0);
+			setTimeout(() => {
+				this.parse();
+			}, 0);
 
 		} else {
 			this.response.emit('error', new Error('ExpressScan descriptor does not match.'));
@@ -101,7 +103,9 @@ class RPLidarDriverParserExpressScan {
 		this.response.emit('scan', scans);
 
 		this.currentHeader = nextHeader;
-		setTimeout(this.parse, 0);
+		setTimeout(() => {
+			this.parse();
+		}, 0);
 	}
 
 	computeCheckSum(headerBuffer, cabinBuffer) {
