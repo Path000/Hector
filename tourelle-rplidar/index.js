@@ -29,6 +29,8 @@ lidarRequest.on('debug', (data) => {
 lidarPort.open(() => {
 	setTimeout(() => {
 		lidarRequest.getLidarHealth((err) => {
+			console.log('health asked finished');
+			console.log(err);
 			exitFunction({
 				exit: true
 			}, err);
