@@ -8,22 +8,22 @@ const lidarMotor = new RPLidarDriverMotor(18);
 const lidarResponse = new RPLidarDriverResponse(lidaPort);
 const lidarRequest = new RPLidarDriverRequest(lidarPort, lidarResponse);
 
-lidar.on('error', (err) => {
+lidarPort.on('error', (err) => {
 	exitFunction({
 		exit: true
 	}, err);
 });
 
-lidarRequest.on('debug', (data) => {
-	console.log(data);
-});
-
-lidar.on('open', () => {
+lidarPort.on('open', () => {
 	console.log('Port oppened');
 });
 
-lidar.on('close', () => {
+lidarPort.on('close', () => {
 	console.log('Port closed');
+});
+
+lidarRequest.on('debug', (data) => {
+	console.log(data);
 });
 
 lidarPort.open(() => {
@@ -34,6 +34,10 @@ lidarPort.open(() => {
 			}, err);
 		});
 	}, 10);
+});
+
+lidarResponse.on('debug', (data) => {
+	console.log(data);
 });
 
 lidarResponse.on('health', (data) => {
@@ -68,6 +72,10 @@ lidarResponse.on('info', (data) => {
 		}, 3000);
 
 	}, 10);
+});
+
+lidarResponse.on('scan', (data) => {
+	console.log(data);
 });
 
 const exitHandler = (options, err) => {

@@ -87,9 +87,8 @@ class RPLidarDriverParserExpressScan {
 			scans.push(scan2);
 		}
 
-		// TODO emit
-		console.log(this.currentHeader);
-		console.log(scans);
+		this.emit('debug', this.currentHeader);
+		this.emit('scan', scans);
 
 		this.currentHeader = nextHeader;
 		setTimeout(this.parse, 0);
