@@ -16,8 +16,9 @@ class RPLidarDriverParserExpressScan {
 	}
 
 	parse() {
+
 		if (this.firstPacket) {
-			this.firstPacket = false;
+
 			this.parseDescriptorAndFirstHeader();
 			return;
 		}
@@ -37,10 +38,14 @@ class RPLidarDriverParserExpressScan {
 
 			this.currentHeader = this.parseHeader(buffer.slice(DESCRIPTOR_SIZE));
 
+			this.firstPacket = false;
+
 			setTimeout(this.parse, 0);
+
 		} else {
 			this.response.emit('error', new Error('ExpressScan descriptor does not match.'));
 		}
+
 	}
 
 	parseCabinsAndNextHeader() {
@@ -143,8 +148,6 @@ class RPLidarDriverParserExpressScan {
 		head.startAngle = ((startAngleQ6MSB << 8) | startAngleQ6LSB) / 64;
 
 		head.startFlag = byte3 & 0b10000000;
-
-		console.log(head);
 
 		return head;
 	}
