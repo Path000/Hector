@@ -5,7 +5,7 @@ const RPLidarDriverResponse = require('./rplidar-driver-response.js')
 
 const lidarPort = new RPLidarDriverSerialport('/dev/ttyAMA0');
 const lidarMotor = new RPLidarDriverMotor(18);
-const lidarResponse = new RPLidarDriverResponse(lidaPort);
+const lidarResponse = new RPLidarDriverResponse(lidarPort);
 const lidarRequest = new RPLidarDriverRequest(lidarPort, lidarResponse);
 
 lidarPort.on('error', (err) => {
