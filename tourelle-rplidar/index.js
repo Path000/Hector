@@ -29,9 +29,7 @@ lidarRequest.on('debug', (data) => {
 lidarPort.open(() => {
 	setTimeout(() => {
 		lidarRequest.getLidarHealth((err) => {
-			console.log('health asked finished');
-			console.log(err);
-			exitFunction({
+			if (err) exitFunction({
 				exit: true
 			}, err);
 		});
@@ -52,7 +50,7 @@ lidarResponse.on('health', (data) => {
 	}
 	setTimeout(() => {
 		lidarRequest.getLidarInfo((err) => {
-			exitFunction({
+			if (err) exitFunction({
 				exit: true
 			}, err);
 		});
@@ -67,7 +65,7 @@ lidarResponse.on('info', (data) => {
 
 		setTimeout(() => {
 			lidarRequest.startExpressScan((err) => {
-				exitFunction({
+				if (err) exitFunction({
 					exit: true
 				}, err);
 			});
