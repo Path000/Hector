@@ -13,11 +13,11 @@ class RPLidarDriverParserInfo {
 	}
 
 	parse() {
-		this.response.emit('debug', 'Parsing Info Data');
-
 		const bytesToConsume = DESCRIPTOR_SIZE + PAYLOAD_SIZE;
 
 		if (this.port.getBufferSize() < bytesToConsume) return;
+
+		this.response.emit('debug', 'Parsing Info Data');
 
 		const buffer = this.port.consumeBuffer(bytesToConsume);
 

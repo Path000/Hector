@@ -24,11 +24,11 @@ class RPLidarDriverParserExpressScan {
 	}
 
 	parseDescriptorAndFirstHeader() {
-		this.response.emit('debug', 'Parsing Express Scan Data');
-
 		const bytesToConsume = DESCRIPTOR_SIZE + HEADER_SIZE;
 
 		if (this.port.getBufferSize() < bytesToConsume) return;
+
+		this.response.emit('debug', 'Parsing Express Scan Data');
 
 		const buffer = this.port.consumeBuffer(bytesToConsume);
 

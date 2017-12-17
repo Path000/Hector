@@ -30,7 +30,7 @@ class RPLidarDriverRequest extends EventEmitter {
 	}
 
 	startExpressScan(next) {
-		this.response.setExpressScanParser(t);
+		this.response.setExpressScanParser();
 		this.emit('debug', 'startExpressScan requested');
 		this.port.write(REQUESTS.EXPRESS_SCAN, next);
 	}
