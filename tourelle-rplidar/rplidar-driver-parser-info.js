@@ -27,7 +27,7 @@ class RPLidarDriverParserInfo {
 				firmware_minor: payload[1],
 				firmware_major: payload[2],
 				hardware: payload[3],
-				serial_number: payload.slice(4, 20);
+				serial_number: payload.slice(4, 20)
 			};
 			this.response.emit('info', parsedData);
 		}
