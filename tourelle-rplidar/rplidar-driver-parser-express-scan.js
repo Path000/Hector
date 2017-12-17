@@ -7,6 +7,7 @@ const CABINS_SIZE = 80;
 const DESCRIPTOR = Buffer.from([0xA5, 0x5A, 0x54, 0x00, 0x00, 0x40, 0x82]);
 
 class RPLidarDriverParserExpressScan {
+
 	constructor(response, port) {
 		this.response = response;
 		this.port = port;
@@ -37,6 +38,8 @@ class RPLidarDriverParserExpressScan {
 			this.currentHeader = this.parseHeader(buffer.slice(DESCRIPTOR_SIZE));
 
 			setTimeout(this.parse, 0);
+		} else {
+			this.response.emit('error', new Error('ExpressScan descriptor does not match.'));
 		}
 	}
 
