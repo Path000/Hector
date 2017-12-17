@@ -52,6 +52,8 @@ class RPLidarDriverParserExpressScan {
 
 	parseCabinsAndNextHeader() {
 
+		this.response.emit('debug', this.currentHeader);
+
 		if (!this.currentHeader) {
 			this.response.emit('error', new Error('this.currentHeader was not set'));
 			return;
@@ -82,27 +84,24 @@ class RPLidarDriverParserExpressScan {
 
 		const nextHeader = this.parseHeader(bufferNextHeader);
 
-		const scans = [];
-
 		for (let index = 0; index < 16; index++) {
 
 			const buffCabin = bufferCabins.slice(index * 5, index * 5 + 5);
 
 			const cabin = this.parseCabin(buffCabin);
 
+			this.response.emit('debug', cabin);
+
 			const scan1 = {}
 			scan1.distance = cabin.distance1;
 			scan1.angle = this.computeAngle(index * 2, this.currentHeader.startAngle, nextHeader.startAngle, cabin.deltaAngle1);
-			scans.push(scan1);
+			this.response.emit('scan', scan1);
 
 			const scan2 = {}
 			scan2.distance = cabin.distance2;
 			scan2.angle = this.computeAngle(index * 2 + 1, this.currentHeader.startAngle, nextHeader.startAngle, cabin.deltaAngle2);
-			scans.push(scan2);
+			this.response.emit('scan', scan2);
 		}
-
-		this.response.emit('debug', this.currentHeader);
-		this.response.emit('scan', scans);
 
 		this.currentHeader = nextHeader;
 		setTimeout(() => {
