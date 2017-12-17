@@ -29,7 +29,7 @@ class RPLidarDriverSerialport extends EventEmitter {
 		});
 
 		this.port.on('data', (chunk) => {
-			appendBuffer(chunk);
+			this.appendBuffer(chunk);
 			this.emit('dataAvailable');
 			// I choose to not use SerialPort parsers
 			// Response format is given by request.
