@@ -27,8 +27,10 @@ lidar.on('info', (data) => {
 	}, 10);
 });
 
-lidar.on('error', (data) => {
-	console.log(data);
+lidar.on('error', (err) => {
+	exitFunction({
+		exit: true
+	}, err);
 });
 
 lidar.on('open', () => {

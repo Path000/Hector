@@ -60,6 +60,24 @@ Warning
 */
 
 for (let index = 0; index < 16; index++) {
-	console.log(index * 5 + 4);
-	console.log(index * 5 + 9);
+	console.log(index * 2 + 0);
+	console.log(index * 2 + 1);
+}
+
+const buf1 = Buffer.allocUnsafe(26);
+
+for (let i = 0; i < 26; i++) {
+	// 97 is the decimal ASCII value for 'a'
+	buf1[i] = i + 97;
+}
+console.log(buf1.toString('ascii', 0, buf1.length));
+const buf2 = buf1.slice(0, 3);
+console.log(buf2.toString('ascii', 0, buf2.length));
+const buf3 = buf1.slice(3);
+console.log(buf3.toString('ascii', 0, buf3.length));
+console.log(buf2.toString('ascii', 0, buf2.length));
+
+for (let index = 0; index < 16; index++) {
+	console.log(index * 5 + 0);
+	console.log(index * 5 + 5);
 }
