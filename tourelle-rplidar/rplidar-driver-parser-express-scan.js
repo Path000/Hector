@@ -68,7 +68,7 @@ class RPLidarDriverParserExpressScan {
 
 		if (this.port.getBufferSize() < CABINS_SIZE + HEADER_SIZE) return;
 
-		this.response.emit('debug', `Buffer length : ${this.dataBuffer.length}`);
+		this.response.emit('debug', `Buffer length : ${this.port.getBufferSize()}`);
 
 		const bufferCabins = this.port.consumeBuffer(CABINS_SIZE);
 		const bufferNextHeader = this.port.consumeBuffer(HEADER_SIZE)
