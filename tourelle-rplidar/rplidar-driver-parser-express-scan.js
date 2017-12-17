@@ -144,6 +144,8 @@ class RPLidarDriverParserExpressScan {
 
 		head.startFlag = byte3 & 0b10000000;
 
+		console.log(head);
+
 		return head;
 	}
 
