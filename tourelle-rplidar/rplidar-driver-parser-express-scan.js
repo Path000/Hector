@@ -73,10 +73,12 @@ class RPLidarDriverParserExpressScan {
 		const bufferCabins = this.port.consumeBuffer(CABINS_SIZE);
 		const bufferNextHeader = this.port.consumeBuffer(HEADER_SIZE)
 
+		/*
 		if (this.computeCheckSum(this.currentHeader.buffer, bufferCabins) != this.currentHeader.checkSum) {
 			this.response.emit('error', new Error('Wrong check sum.'));
 			return;
 		}
+		*/
 
 		const nextHeader = this.parseHeader(bufferNextHeader);
 
