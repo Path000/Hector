@@ -1,5 +1,6 @@
 const EventEmitter = require('events')
 	.EventEmitter;
+
 const SerialPort = require('serialport');
 
 /*

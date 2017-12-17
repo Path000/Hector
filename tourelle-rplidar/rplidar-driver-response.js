@@ -10,6 +10,7 @@ const RPLidarDriverParserExpressScan = require('./rplidar-driver-parser-express-
 */
 
 class RPLidarDriverResponse extends EventEmitter {
+
 	consructor(port) {
 		super();
 		this.port = port;
