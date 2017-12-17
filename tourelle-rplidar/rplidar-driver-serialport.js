@@ -10,7 +10,7 @@ const SerialPort = require('serialport');
 class RPLidarDriverSerialport extends EventEmitter {
 
 	constructor(path) {
-		super();
+		//super();
 		this.path = path;
 	}
 
