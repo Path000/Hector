@@ -11,7 +11,7 @@ class RPLidarDriverParserExpressScan {
 		this.response = response;
 		this.port = port;
 		this.firstPacket = true;
-		this.emit('debug', 'RPLidarDriverParserExpressScan constructed');
+		this.response.emit('debug', 'RPLidarDriverParserExpressScan constructed');
 	}
 
 	parse() {

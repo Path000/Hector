@@ -9,7 +9,7 @@ class RPLidarDriverParserInfo {
 	constructor(response, port) {
 		this.response = response;
 		this.port = port;
-		this.emit('debug', 'RPLidarDriverParserInfo constructed');
+		this.response.emit('debug', 'RPLidarDriverParserInfo constructed');
 	}
 
 	parse() {
