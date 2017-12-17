@@ -12,6 +12,7 @@ class RPLidarDriverSerialport extends EventEmitter {
 	constructor(path) {
 		super();
 		this.path = path;
+		this.emit('debug', 'RPLidarDriverSerialport constructed');
 	}
 
 	open(next) {

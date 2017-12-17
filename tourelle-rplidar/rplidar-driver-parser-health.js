@@ -11,6 +11,7 @@ class RPLidarDriverParserHealth {
 	constructor(response, port) {
 		this.response = response;
 		this.port = port;
+		this.emit('debug', 'RPLidarDriverParserHealth constructed');
 	}
 
 	parse() {

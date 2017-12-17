@@ -14,6 +14,7 @@ class RPLidarDriverRequest extends EventEmitter {
 		super();
 		this.port = port;
 		this.response = response;
+		this.emit('debug', 'RPLidarDriverRequest constructed');
 	}
 
 	getLidarHealth(next) {

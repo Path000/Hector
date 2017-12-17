@@ -12,13 +12,14 @@ const RPLidarDriverParserExpressScan = require('./rplidar-driver-parser-express-
 class RPLidarDriverResponse extends EventEmitter {
 
 	consructor(port) {
-		//super();
+		super();
 		this.port = port;
 		this.unsetParser();
 		this.port.on('dataAvailable', () => {
 			if (this.currentParser == undefined) return;
 			this.currentParser.parse();
 		});
+		this.emit('debug', 'RPLidarDriverResponse constructed');
 	}
 
 	unsetParser() {
