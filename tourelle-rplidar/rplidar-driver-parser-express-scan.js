@@ -42,6 +42,11 @@ class RPLidarDriverParserExpressScan {
 
 	parseCabinsAndNextHeader() {
 
+		if (!this.currentHeader) {
+			this.emit('error', new Error('this.currentHeader was not set'));
+			return;
+		}
+
 		if (this.currentHeader.sync1 != 0xA || this.currentHeader.sync2 != 0x5) {
 			this.emit('error', new Error(`Wrong sync values ${this.currentHeader.sync1} ${this.currentHeader.sync2}`));
 			return;
