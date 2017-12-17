@@ -52,8 +52,6 @@ class RPLidarDriverParserExpressScan {
 
 	parseCabinsAndNextHeader() {
 
-		this.response.emit('debug', this.currentHeader);
-
 		if (!this.currentHeader) {
 			this.response.emit('error', new Error('this.currentHeader was not set'));
 			return;
@@ -71,6 +69,8 @@ class RPLidarDriverParserExpressScan {
 		if (this.port.getBufferSize() < CABINS_SIZE + HEADER_SIZE) return;
 
 		this.response.emit('debug', `Buffer length : ${this.port.getBufferSize()}`);
+
+		this.response.emit('debug', this.currentHeader);
 
 		const bufferCabins = this.port.consumeBuffer(CABINS_SIZE);
 		const bufferNextHeader = this.port.consumeBuffer(HEADER_SIZE)
