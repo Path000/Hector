@@ -70,9 +70,7 @@ class RPLidarDriverParserExpressScan {
 
 		this.response.emit('debug', `Buffer length : ${this.port.getBufferSize()}`);
 
-		const parsedPacket = {};
-		parsedPacket.head = this.currentHeader;
-		parsedPacket.scans = [];
+		const parsedPacket = [];
 
 		const bufferCabins = this.port.consumeBuffer(CABINS_SIZE);
 		const bufferNextHeader = this.port.consumeBuffer(HEADER_SIZE)
@@ -90,15 +88,13 @@ class RPLidarDriverParserExpressScan {
 
 			const cabin = this.parseCabin(buffCabin);
 
-			parsedPacket.cabins.push(cabin);
-
 			const scan1 = {}
 			scan1.distance = cabin.distance1;
 			scan1.startAngle = this.currentHeader.startAngle;
 			scan1.deltaAngle = cabin.deltaAngle1;
 			scan1.nextAngle = nextHeader.startAngle;
 			scan1.angle = this.computeAngle(index * 2, this.currentHeader.startAngle, nextHeader.startAngle, cabin.deltaAngle1);
-			parsedPacket.scans.push(scan1);
+			parsedPacket.push(scan1);
 
 			const scan2 = {}
 			scan2.distance = cabin.distance2;
@@ -106,7 +102,7 @@ class RPLidarDriverParserExpressScan {
 			scan2.deltaAngle = cabin.deltaAngle2;
 			scan2.nextAngle = nextHeader.startAngle;
 			scan2.angle = this.computeAngle(index * 2 + 1, this.currentHeader.startAngle, nextHeader.startAngle, cabin.deltaAngle2);
-			parsedPacket.scans.push(scan2);
+			parsedPacket.push(scan2);
 		}
 
 		this.response.emit('scan', parsedPacket);
