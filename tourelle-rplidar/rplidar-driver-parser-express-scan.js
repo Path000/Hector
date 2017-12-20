@@ -70,17 +70,18 @@ class RPLidarDriverParserExpressScan {
 
 		this.response.emit('debug', `Buffer length : ${this.port.getBufferSize()}`);
 
-		this.response.emit('debug', this.currentHeader);
+		const parsedPacket = {};
+		parsedPacket.head = this.currentHeader;
+		parsedPacket.cabins = [];
+		parsedPacket.scans = [];
 
 		const bufferCabins = this.port.consumeBuffer(CABINS_SIZE);
 		const bufferNextHeader = this.port.consumeBuffer(HEADER_SIZE)
 
-		/*
-		if (this.computeCheckSum(this.currentHeader.buffer, bufferCabins) != this.currentHeader.checkSum) {
+		if (this.computeCheckSum(this.currentHeader.sum, bufferCabins) != this.currentHeader.checkSum) {
 			this.response.emit('error', new Error('Wrong check sum.'));
 			return;
 		}
-		*/
 
 		const nextHeader = this.parseHeader(bufferNextHeader);
 
@@ -90,35 +91,37 @@ class RPLidarDriverParserExpressScan {
 
 			const cabin = this.parseCabin(buffCabin);
 
-			this.response.emit('debug', cabin);
+			parsedPacket.cabins.push(cabin);
 
 			const scan1 = {}
 			scan1.distance = cabin.distance1;
 			scan1.angle = this.computeAngle(index * 2, this.currentHeader.startAngle, nextHeader.startAngle, cabin.deltaAngle1);
-			this.response.emit('scan', scan1);
+			parsedPacket.scans.push(scan1);
 
 			const scan2 = {}
 			scan2.distance = cabin.distance2;
 			scan2.angle = this.computeAngle(index * 2 + 1, this.currentHeader.startAngle, nextHeader.startAngle, cabin.deltaAngle2);
-			this.response.emit('scan', scan2);
+			parsedPacket.scans.push(scan2);
 		}
 
+		this.response.emit('scan', parsedPacket);
+
 		this.currentHeader = nextHeader;
+
 		setTimeout(() => {
 			this.parse();
 		}, 0);
 	}
 
-	computeCheckSum(headerBuffer, cabinBuffer) {
+	computeCheckSum(headerSum, cabinBuffer) {
 
-		let xorBuffer = cabinBuffer[0];
-		for (let index = 1; index < 80; index++) {
-			xorBuffer = xorBuffer ^ cabinBuffer[index];
+		let sum = headerSum;
+
+		for (const byte of cabinBuffer) {
+			sum ^= byte;
 		}
-		for (const value of headerBuffer) {
-			xorBuffer = xorBuffer ^ value;
-		}
-		return xorBuffer;
+
+		return sum;
 	}
 
 	angleDiff(angle1, angle2) {
@@ -133,8 +136,6 @@ class RPLidarDriverParserExpressScan {
 	parseHeader(buffer) {
 		const head = {};
 
-		head.buffer = buffer;
-
 		const byte0 = buffer[0];
 		head.sync1 = (byte0 & 0xF0) >>> 4;
 		const chkSumLSB = byte0 & 0x0F;
@@ -145,7 +146,8 @@ class RPLidarDriverParserExpressScan {
 
 		head.checkSum = (chkSumMSB << 4) | chkSumLSB;
 
-		const startAngleQ6LSB = buffer[2];
+		const byte2 = buffer[2];
+		const startAngleQ6LSB = byte2;
 
 		const byte3 = buffer[3];
 		const startAngleQ6MSB = byte3 & 0b01111111;
@@ -153,6 +155,8 @@ class RPLidarDriverParserExpressScan {
 		head.startAngle = ((startAngleQ6MSB << 8) | startAngleQ6LSB) / 64;
 
 		head.startFlag = byte3 & 0b10000000;
+
+		head.sum = byte2 ^ byte3;
 
 		return head;
 	}
