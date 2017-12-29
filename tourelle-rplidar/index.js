@@ -9,9 +9,8 @@ const lidarResponse = new RPLidarDriverResponse(lidarPort);
 const lidarRequest = new RPLidarDriverRequest(lidarPort, lidarResponse);
 
 lidarPort.on('error', (err) => {
-	exitFunction({
-		exit: true
-	}, err);
+	console.log(err);
+	throw err;
 });
 
 lidarPort.on('open', () => {
@@ -26,16 +25,6 @@ lidarRequest.on('debug', (data) => {
 	console.log(data);
 });
 
-lidarPort.open(() => {
-	setTimeout(() => {
-		lidarRequest.getLidarHealth((err) => {
-			if (err) exitFunction({
-				exit: true
-			}, err);
-		});
-	}, 10);
-});
-
 lidarResponse.on('debug', (data) => {
 	console.log(data);
 });
@@ -43,16 +32,16 @@ lidarResponse.on('debug', (data) => {
 lidarResponse.on('health', (data) => {
 	console.log(data);
 	if (data.statusCode != 0) {
-		console.log('Health is not good. Stopping ...');
-		exitFunction({
-			exit: true
-		});
+		consr msg = 'Health is not good. Stopping ...';
+		console.log(msg);
+		throw new Error(msg);
 	}
 	setTimeout(() => {
 		lidarRequest.getLidarInfo((err) => {
-			if (err) exitFunction({
-				exit: true
-			}, err);
+			if (err) {
+				console.log(err);
+				throw err;
+			}
 		});
 	}, 10);
 });
@@ -65,43 +54,41 @@ lidarResponse.on('info', (data) => {
 
 		setTimeout(() => {
 			lidarRequest.startExpressScan((err) => {
-				if (err) exitFunction({
-					exit: true
-				}, err);
+				if (err) {
+					console.log(err);
+					throw err;
+				}
 			});
 		}, 3000);
 
 	}, 10);
 });
 
-lidarResponse.on('scan', (data) => {
-	console.log(data);
-});
-
-const exitHandler = (options, err) => {
-	exitFunction(options, err);
+const getScanEmitter = () => {
+	return lidarResponse;
 }
 
-const exitFunction = (options, err) => {
+const start = () => {
+	lidarPort.open(() => {
+		setTimeout(() => {
+			lidarRequest.getLidarHealth((err) => {
+				if (err) exitFunction({
+					exit: true
+				}, err);
+			});
+		}, 10);
+	});
+}
+
+const stop = () => {
 	//clean all
 	if (lidarMotor) lidarMotor.stop();
-	if (lidarRequest) lidarRequest.stopScan();
-	if (lidarPort) lidarPort.close();
-	if (options.cleanup) console.log('clean');
-	if (err) console.log(err.stack);
-	if (options.exit) process.exit();
+	if (lidarRequest) lidarRequest.stopScan(() => {
+		if (lidarPort) lidarPort.close();
+	});
 
 }
 
-//do something when app is closing
-process.on('exit', exitHandler.bind(null, {
-	cleanup: true
-}));
-//catches ctrl+c event
-process.on('SIGINT', exitHandler.bind(null, {
-	exit: true
-}));
-//catches uncaught exceptions
-process.on('uncaughtException', exitHandler.bind(null, {
-	exit: true
-}));
+module.exports.stop = stop;
+module.exports.start = start;
+module.exports.getScanEmitter = getScanEmitter;
