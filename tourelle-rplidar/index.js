@@ -80,11 +80,12 @@ const start = () => {
 	});
 }
 
-const stop = () => {
+const stop = (next) => {
 	//clean all
 	if (lidarMotor) lidarMotor.stop();
 	if (lidarRequest) lidarRequest.stopScan(() => {
 		if (lidarPort) lidarPort.close();
+		next();
 	});
 
 }

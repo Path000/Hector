@@ -29,8 +29,9 @@ server.listen(8080);
 
 const exitHandler = () => {
 	console.log("Clean exit");
-	lidar.stop();
-	process.exit();
+	lidar.stop(()=> {
+		process.exit();
+	});
 }
 
 //catches ctrl+c event
