@@ -19,7 +19,7 @@
 
 <div style="z-index: 1; position: absolute; top:0; left: 0;">
 	<button id='id-btn-start'>Start</button><br/>
-	<button id='id-btn-stop'>Start</button>
+	<button id='id-btn-stop'>Stop</button>
 </div>
 
 <script>
@@ -29,15 +29,15 @@
 	btnStart.onclick = function () {
 		if(socket) socket.emit('start', {});
 	};
+
 	var btnStop = document.getElementById("id-btn-stop");
 	btnStop.onclick = function () {
 		if(socket) socket.emit('stop', {});
 	};
 
-	function convPolar2CartXZ(angle, dist, y) {
+	function convPolar2CartXZ(angle, dist) {
 		return {
 			x: dist*Math.cos(angle*Math.PI/180),
-			y: y,
 			z: dist*Math.sin(angle*Math.PI/180)
 		};
 	}
@@ -50,7 +50,7 @@
 	}
 
 	var socket = io.connect('http://localhost:8080');
-	//var socket = io.connect('http://10.0.0.11:8080');
+	//var socket = io.connect('http://10.0.0.9:8080');
 
 	socket.on('scan', function (data) {
 		drawScan(data);
@@ -59,6 +59,7 @@
     var camera;
     var scene;
     var renderer;
+    var cloud = [];
 
     function drawScan(data) {
 
@@ -67,13 +68,29 @@
 
  		for(scan of data) {
 			if(scan.distance == 0) continue;
-			var point = convPolar2CartXZ(scan.angle, scan.distance, 10);
-        	var particle = new THREE.Vector3(point.x, point.y, point.z);
+			var point = convPolar2CartXZ(scan.angle, scan.distance/50);
+        	var particle = new THREE.Vector3(point.x, 10, point.z);
         	geom.vertices.push(particle);
         	geom.colors.push(new THREE.Color(0xFF0000));
         }
-        var cloud = new THREE.Points(geom, material);
-        scene.add(cloud);
+        if(cloud.length >= 20) {
+        	var scan = cloud.shift();
+	        scene.remove(scan);
+	        scan.geometry.dispose();
+	        scan.material.dispose();
+        }
+        var newScan = new THREE.Points(geom, material);
+        cloud.push(newScan);
+        scene.add(newScan);
+    }
+
+    function render() {
+        //cube.rotation.x += 0;
+        //cube.rotation.y += 0.01;
+        //cube.rotation.z += 0;
+
+        requestAnimationFrame(render);
+        renderer.render(scene, camera);
     }
 
 	function init() {
@@ -81,13 +98,12 @@
 		scene = new THREE.Scene();
 		camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 		renderer = new THREE.WebGLRenderer();
-        //renderer.setClearColorHex();
+
         renderer.setClearColor(new THREE.Color(0xEEEEEE));
         renderer.setSize(window.innerWidth, window.innerHeight);
 
         var axes = new THREE.AxesHelper(200);
         scene.add(axes);
-
 
         // create the ground plane
         var planeGeometry = new THREE.PlaneGeometry(600, 600);
@@ -96,15 +112,14 @@
         // rotate and position the plane
         plane.rotation.x = -0.5 * Math.PI;
         plane.position.x = 0;
-        plane.position.y = -1;
+        plane.position.y = 0;
         plane.position.z = 0;
-
 		// add the plane to the scene
         scene.add(plane);
 
         // create a cube
         var cubeGeometry = new THREE.BoxGeometry(4, 2, 3);
-        var cubeMaterial = new THREE.MeshBasicMaterial({color: 0xff0000});
+        var cubeMaterial = new THREE.MeshBasicMaterial({color: 0x0000ff});
         var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
         // position the cube
         cube.position.x = 0;
@@ -133,15 +148,6 @@
  
         
         render();
-
-        function render() {
-            //cube.rotation.x += 0;
-            //cube.rotation.y += 0.01;
-            //cube.rotation.z += 0;
-
-            requestAnimationFrame(render);
-            renderer.render(scene, camera);
-        }
 	}
 
     function onResize() {

@@ -153,7 +153,7 @@ class RPLidarDriverParserExpressScan {
 		const byte3 = buffer[3];
 		const startAngleQ6MSB = byte3 & 0b01111111;
 
-		head.startAngle = ((startAngleQ6MSB << 8) | startAngleQ6LSB) / 64;
+		head.startAngle = ((startAngleQ6MSB << 8) | startAngleQ6LSB) / 64; 
 
 		head.startFlag = byte3 & 0b10000000;
 
@@ -167,24 +167,24 @@ class RPLidarDriverParserExpressScan {
 
 		const byte0 = buffer[0];
 		const distance1LSB = (byte0 & 0b11111100) >>> 2;
-		const deltaAngle1MSB = byte0 & 0b00000011;
+		const deltaAngle1Q3MSB = byte0 & 0b00000011;
 
 		const distance1MSB = buffer[1];
 		cabin.distance1 = (distance1MSB << 6) | distance1LSB;
 
 		const byte2 = buffer[2];
 		const distance2LSB = (byte2 & 0b11111100) >>> 2;
-		const deltaAngle2MSB = byte2 & 0b00000011;
+		const deltaAngle2Q3MSB = byte2 & 0b00000011;
 
 		const distance2MSB = buffer[3];
 		cabin.distance2 = (distance2MSB << 6) | distance2LSB;
 
 		const byte4 = buffer[4];
-		const deltaAngle2LSB = (byte4 & 0xF0) >>> 4;
-		const deltaAngle1LSB = byte4 & 0x0F;
+		const deltaAngle2Q3LSB = (byte4 & 0xF0) >>> 4;
+		const deltaAngle1Q3LSB = byte4 & 0x0F;
 
-		cabin.deltaAngle1 = (deltaAngle1MSB << 4) | deltaAngle1LSB;
-		cabin.deltaAngle2 = (deltaAngle2MSB << 4) | deltaAngle2LSB;
+		cabin.deltaAngle1 = ((deltaAngle1Q3MSB << 4) | deltaAngle1Q3LSB) / 8; // q3
+		cabin.deltaAngle2 = ((deltaAngle2Q3MSB << 4) | deltaAngle2Q3LSB) / 8;
 
 		return cabin;
 	}

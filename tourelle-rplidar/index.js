@@ -32,7 +32,7 @@ lidarResponse.on('debug', (data) => {
 lidarResponse.on('health', (data) => {
 	console.log(data);
 	if (data.statusCode != 0) {
-		consr msg = 'Health is not good. Stopping ...';
+		const msg = 'Health is not good. Stopping ...';
 		console.log(msg);
 		throw new Error(msg);
 	}
@@ -85,7 +85,7 @@ const stop = (next) => {
 	if (lidarMotor) lidarMotor.stop();
 	if (lidarRequest) lidarRequest.stopScan(() => {
 		if (lidarPort) lidarPort.close();
-		next();
+		if (next)next();
 	});
 
 }
