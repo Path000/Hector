@@ -183,8 +183,21 @@ class RPLidarDriverParserExpressScan {
 		const deltaAngle2Q3LSB = (byte4 & 0xF0) >>> 4;
 		const deltaAngle1Q3LSB = byte4 & 0x0F;
 
-		cabin.deltaAngle1 = ((deltaAngle1Q3MSB << 4) | deltaAngle1Q3LSB) / 8; // q3
-		cabin.deltaAngle2 = ((deltaAngle2Q3MSB << 4) | deltaAngle2Q3LSB) / 8;
+		const deltaAngle1Q3 = (deltaAngle1Q3MSB << 4) | deltaAngle1Q3LSB;	
+		const deltaAngle2Q3 = (deltaAngle2Q3MSB << 4) | deltaAngle2Q3LSB;
+
+		if(deltaAngle1Q3 & 0b00100000) {
+			deltaAngle1Q3 = deltaAngle1Q3 & 0b00011111;
+			deltaAngle1Q3 = ~deltaAngle1Q3 + 1;
+		}
+		cabin.deltaAngle1 = deltaAngle1Q3 / 8;
+
+
+		if(deltaAngle2Q3 & 0b00100000) {
+			deltaAngle2Q3 = deltaAngle2Q3 & 0b00011111;
+			deltaAngle2Q3 = ~deltaAngle2Q3 + 1;
+		}
+		cabin.deltaAngle2 = deltaAngle2Q3 / 8;
 
 		return cabin;
 	}
