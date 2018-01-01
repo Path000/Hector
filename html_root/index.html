@@ -49,8 +49,8 @@
 		}
 	}
 
-	var socket = io.connect('http://localhost:8080');
-	//var socket = io.connect('http://10.0.0.9:8080');
+	//var socket = io.connect('http://localhost:8080');
+	var socket = io.connect('http://10.0.0.6:8080');
 
 	socket.on('scan', function (data) {
 		drawScan(data);
@@ -64,12 +64,12 @@
     function drawScan(data) {
 
         var geom = new THREE.Geometry();
-        var material = new THREE.PointsMaterial({size: 1, vertexColors: true});
+        var material = new THREE.PointsMaterial({size: 3, vertexColors: true});
 
  		for(scan of data) {
 			if(scan.distance == 0) continue;
-			var point = convPolar2CartXZ(scan.angle, scan.distance/50);
-        	var particle = new THREE.Vector3(point.x, 10, point.z);
+			var point = convPolar2CartXZ(scan.angle, scan.distance/10);
+        	var particle = new THREE.Vector3(point.x, 2, point.z);
         	geom.vertices.push(particle);
         	geom.colors.push(new THREE.Color(0xFF0000));
         }
@@ -106,7 +106,7 @@
         scene.add(axes);
 
         // create the ground plane
-        var planeGeometry = new THREE.PlaneGeometry(600, 600);
+        var planeGeometry = new THREE.PlaneGeometry(1000, 1000);
         var planeMaterial = new THREE.MeshBasicMaterial({color: 0xcccccc});
         var plane = new THREE.Mesh(planeGeometry, planeMaterial);
         // rotate and position the plane
@@ -119,7 +119,7 @@
 
         // create a cube
         var cubeGeometry = new THREE.BoxGeometry(4, 2, 3);
-        var cubeMaterial = new THREE.MeshBasicMaterial({color: 0x0000ff});
+        var cubeMaterial = new THREE.MeshBasicMaterial({color: 0xFFFFFF});
         var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
         // position the cube
         cube.position.x = 0;
@@ -137,9 +137,9 @@
         //scene.add(spotLight);
 
 
-        camera.position.x = -150;
-        camera.position.y = 200;
-        camera.position.z = 150;
+        camera.position.x = -300;
+        camera.position.y = 400;
+        camera.position.z = 300;
 
 
         camera.lookAt(scene.position);
