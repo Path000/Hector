@@ -2,6 +2,10 @@
 
 void Robot::init() {
 
+  Serial.begin(115200); // RaspberryPI
+  while (!Serial); // wait for serial port to connect. Needed for native USB
+  _command.init(&Serial);
+
   _sensor.init();
   
   _ecran.init();
@@ -19,10 +23,6 @@ void Robot::init() {
     Serial.print("Ooops, Serial2 port was not available !");
     while (1);
   }
-
-  Serial.begin(115200); // RaspberryPI
-  while (!Serial); // wait for serial port to connect. Needed for native USB
-  _command.init(&Serial);
 
   _moteurA.init(PIN_DIR_A, PIN_PWM_A);
   _moteurB.init(PIN_DIR_B, PIN_PWM_B);

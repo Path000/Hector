@@ -18,9 +18,6 @@
 #define PIN_DIR_D 0
 #define PIN_PWM_D 0
 
-#define DISTANCE_A 13 //cm
-#define DISTANCE_B 13 //cm
-
 class Robot {
 	public:
 		void init();
