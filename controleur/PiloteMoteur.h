@@ -9,6 +9,7 @@ class PiloteMoteur {
 		void init(byte pinDir, byte pinPWM);
 		void setCommand(boolean directionRoue, long setpoint);
 		void update(long vitesseMesuree);
+		void stop();
 	private :
 		byte _pinDir;
 		byte _pinPWM;

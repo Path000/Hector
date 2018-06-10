@@ -7,27 +7,23 @@
 
 #define SEQUENCE_MAX_SIZE 30000
 
+struct SpeedSampleType {
+  boolean newSampleAvailable;
+  long speed1; // 4 bytes
+  long speed2; // 4 bytes
+  unsigned int deltaSequence; // 2 bytes
+};
+
 class Compteur {
   public:
     void init(Stream* port);
-    boolean read(); // read and returns true if a sample of speed is ready to be used
-    long getSpeed1();
-    long getSpeed2();
-    boolean hasLostSample(); // returns true if a sample is lost, based on sequence number
-    int getNumberOfSampleLost(); // returns number of lost sample, based on sequence number
-    void ready(); // Data is read and ready to read next
+    SpeedSampleType readIfAvailable(); // read and returns true if a sample of speed is ready to be used
     void resetSequence(); // used when a new move starts. It sync sequence sent by nano
   protected:
   private:
-    void _parseRawData(String* rawData);
     Stream* _port;
     unsigned int _predictedSequence;
     boolean _firstSample;
-    boolean _stringComplete;
-    unsigned int _sequence;
-    int _deltaSequence;
-    long _speed1;
-    long _speed2;
 };
 
 

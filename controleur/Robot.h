@@ -7,16 +7,14 @@
 #include "Command.h"
 #include "PiloteMoteur.h"
 
-// TODO finir câblage
-
-#define PIN_DIR_A 0
-#define PIN_PWM_A 0
-#define PIN_DIR_B 0
-#define PIN_PWM_B 0
-#define PIN_DIR_C 0
-#define PIN_PWM_C 0
-#define PIN_DIR_D 0
-#define PIN_PWM_D 0
+#define PIN_DIR_A 9
+#define PIN_PWM_A 8
+#define PIN_DIR_B 11
+#define PIN_PWM_B 10
+#define PIN_DIR_C 3
+#define PIN_PWM_C 2
+#define PIN_DIR_D 5
+#define PIN_PWM_D 4
 
 class Robot {
 	public:

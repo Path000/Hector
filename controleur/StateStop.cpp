@@ -10,6 +10,8 @@ void StateStop::onStart() {
 	_robot->getEcran()->refresh();
 
 	_robot->stopMoteurs();
+
+	// TODO wait counters à 0
 }
 
 State* StateStop::run() {

@@ -40,48 +40,51 @@ void StateMove::onStart() {
 	_robot->getMoteurC()->setCommand((wC>0)?true:false, long(wC));
 	_robot->getMoteurD()->setCommand((wD>0)?true:false, long(wD));
 
-	_robot->getEcran()->set(2, String("A:")+String(long(wA))+String(" B:")+String(long(wB)));
-	_robot->getEcran()->set(3, String("D:")+String(long(wD))+String(" C:")+String(long(wC)));
-	_robot->getEcran()->refresh();
+	//_robot->getEcran()->set(2, String("A:")+String(long(wA))+String(" B:")+String(long(wB)));
+	//_robot->getEcran()->set(3, String("D:")+String(long(wD))+String(" C:")+String(long(wC)));
+	//_robot->getEcran()->refresh();
 
 }
 
 State* StateMove::run() {
 
-	if (_robot->getCompteur1()->read()) {
+	SpeedSampleType compteur1 = _robot->getCompteur1()->readIfAvailable();
+	if (compteur1.newSampleAvailable) {
 
-    if (_robot->getCompteur1()->hasLostSample()) {
-      _robot->getEcran()->set(0, "SAMPLE LOST 1");
-      _robot->getEcran()->refresh();
+    if (compteur1.deltaSequence > 0) {
+      //_robot->getEcran()->set(0, "SAMPLE LOST 1");
+      //_robot->getEcran()->refresh();
       //TODO : lisser compteur1.getNumberOfSampleLost()
     }
 
-    long speedA = _robot->getCompteur1()->getSpeed2();
-    long speedB = _robot->getCompteur1()->getSpeed1();
+    _robot->getMoteurA()->update(compteur1.speed2);
+    _robot->getMoteurB()->update(compteur1.speed1);
 
-    _robot->getMoteurA()->update(speedA);
-    _robot->getMoteurB()->update(speedB);
-
-    _robot->getCompteur1()->ready();
+    _robot->getEcran()->set(2, String("A:")+String(compteur1.speed2)+String(" B:")+String(compteur1.speed1));
+    _robot->getEcran()->refresh();
   }
 
-  if (_robot->getCompteur2()->read()) {
+  SpeedSampleType compteur2 = _robot->getCompteur2()->readIfAvailable();
+  if (compteur2.newSampleAvailable) {
 
-    if (_robot->getCompteur2()->hasLostSample()) {
-      _robot->getEcran()->set(1, "SAMPLE LOST 2");
-      _robot->getEcran()->refresh();
+    if (compteur2.deltaSequence > 0) {
+      //_robot->getEcran()->set(1, "SAMPLE LOST 2");
+      //_robot->getEcran()->refresh();
       //TODO : lisser compteur2.getNumberOfSampleLost()
     }
 
-    long speedC = _robot->getCompteur2()->getSpeed1();
-    long speedD = _robot->getCompteur2()->getSpeed2();
+    _robot->getMoteurC()->update(compteur2.speed1);
+    _robot->getMoteurD()->update(compteur2.speed2);
 
-    _robot->getMoteurC()->update(speedC);
-    _robot->getMoteurD()->update(speedD);
-
-    _robot->getCompteur2()->ready();
+		_robot->getEcran()->set(3, String("D:")+String(compteur2.speed2)+String(" C:")+String(compteur2.speed1));
+		_robot->getEcran()->refresh();
   }
-
+/*
+    _robot->getMoteurA()->update(10);
+    _robot->getMoteurB()->update(10);
+    _robot->getMoteurC()->update(10);
+    _robot->getMoteurD()->update(10);
+*/
 	return NULL;
 }
 

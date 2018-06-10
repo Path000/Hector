@@ -5,7 +5,9 @@ void PiloteMoteur::init(byte pinDir, byte pinPWM) {
 	_pinPWM = pinPWM;
 	pinMode(_pinDir, OUTPUT);
 	pinMode(_pinPWM, OUTPUT);
-	analogWrite(_pinPWM, 0);
+	//setCommand(true, 0);
+	//update(0);
+	stop();
 
 	_Kp = 255/280;
 	_Ki = 1;
@@ -36,5 +38,11 @@ void PiloteMoteur::update(long vitesseMesuree) {
 
 	_pid->Compute();
 
+	//Serial.println(_output);
+
 	analogWrite(_pinPWM, int(_output));
+}
+
+void PiloteMoteur::stop() {
+	analogWrite(_pinPWM, 0);
 }

@@ -2,14 +2,15 @@
 #define StateMove_h
 
 #include "State.h"
+#include "Compteur.h"
 
 #define DEMI_LARGEUR 0.13 //m
-#define DEMI_LONGUEUR 0.13 //m
+#define DEMI_LONGUEUR 0.13 //m 
 
 
 // PWM 100% -> 280 fronts/100ms
 
-#define STRAFE_COEF 100
+#define STRAFE_COEF 10
 #define ROTATION_COEF 10
 
 class StateMove : public State {
