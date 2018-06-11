@@ -8,9 +8,6 @@ void StateMachine::init(Robot* robot) {
   _stateChoc.setStateIdle(&_stateIdle);
   _stateWelcome.init(_robot);
   _stateWelcome.setStateIdle(&_stateIdle);
-  _stateMove.init(_robot);
-  _stateStop.init(_robot);
-  _stateStop.setStateIdle(&_stateIdle);
 
 	changeState((State*)&_stateWelcome);
 }
@@ -27,23 +24,56 @@ void StateMachine::changeState(State* newState) {
 
 void StateMachine::run() {
 
-	if (_robot->getCommand()->read()) {
-		ParsedCommand command = _robot->getCommand()->get();
-		if(command.cmd == "MOVE") {
-
-			_stateMove.setStrafe(command.arrayArgs[0].toInt());
-			_stateMove.setRotation(command.arrayArgs[1].toInt());
-			
-			changeState(&_stateMove);
-		}
-		if(command.cmd == "STOP") {
-			changeState(&_stateStop);
+	ParsedCommandType* command = _robot->getCommand()->readIfAvailable();
+	if (command->newCommandAvailable) {
+		if(command->cmd == "MOVE") {
+			_robot->computeMove(command->arrayArgs[0], command->arrayArgs[1]);
 		}
 	}
 
+	SpeedSampleType* compteur1 = _robot->getCompteur1()->readIfAvailable();
+	if (compteur1->newSampleAvailable) {
+
+    if (compteur1->deltaSequence > 0) {
+      Serial.print("SAMPLE LOST 1 : ");
+      Serial.println(compteur1->deltaSequence, DEC);
+    }
+
+    _robot->getMoteurA()->setCurrentSpeed(compteur1->speed2);
+    _robot->getMoteurB()->setCurrentSpeed(compteur1->speed1);
+
+    _robot->getEcran()->set(2, String("A:")+String(compteur1->speed2)+String(" B:")+String(compteur1->speed1));
+    _robot->getEcran()->refresh();
+  }
+
+  SpeedSampleType* compteur2 = _robot->getCompteur2()->readIfAvailable();
+  if (compteur2->newSampleAvailable) {
+
+    if (compteur2->deltaSequence > 0) {
+      Serial.print("SAMPLE LOST 2 : ");
+      Serial.println(compteur1->deltaSequence, DEC);
+    }
+
+    _robot->getMoteurC()->setCurrentSpeed(compteur2->speed1);
+    _robot->getMoteurD()->setCurrentSpeed(compteur2->speed2);
+
+		_robot->getEcran()->set(3, String("D:")+String(compteur2->speed2)+String(" C:")+String(compteur2->speed1));
+		_robot->getEcran()->refresh();
+  }
+
   if(_robot->getSensor()->detectImpact()) {
+  	// Stop motors
+  	_robot->computeMove(-1, 0);
     changeState(&_stateChoc);
   }
+
+  if(_robot->getMoteurA()->update() +
+  	_robot->getMoteurB()->update() +
+  	_robot->getMoteurC()->update() + 
+  	_robot->getMoteurD()->update() == 0) {
+  	changeState(&_stateIdle);
+  }
+
   
 	changeState(_currentState->run());
 }

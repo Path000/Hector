@@ -7,9 +7,7 @@
 #include "StateIdle.h"
 #include "StateWelcome.h"
 #include "StateChoc.h"
-#include "StateMove.h"
-#include "StateStop.h"
-
+#include "Compteur.h"
 
 class StateMachine {
 	public:
@@ -22,8 +20,6 @@ class StateMachine {
 		StateIdle _stateIdle;
 		StateChoc _stateChoc;
 		StateWelcome _stateWelcome;
-		StateMove _stateMove;
-		StateStop _stateStop;
 };
 
 

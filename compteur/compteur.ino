@@ -11,11 +11,16 @@
 
 #define SEQUENCE_MAX_SIZE 30000
 
+/*
+	Cette version n'est pas prévue pour l'odométrie.
+	Uniquement pour avoir une vitesse instantanée des roues.
+*/
+
 unsigned long lastSampleTime;
 unsigned int sampleSequence;
 
-volatile long counterA = 0L;
-volatile long counterB = 0L;
+volatile unsigned int counterA = 0;
+volatile unsigned int counterB = 0;
 
 void interruptOnRaisingA() {
 	counterA++;
@@ -42,13 +47,14 @@ void setup() {
 
 void loop() {
 	if(millis() - lastSampleTime >= SAMPLE_TIME) {
-    	Serial.print(sampleSequence, DEC);
+    	Serial.print(sampleSequence);
     	Serial.print(SEPARATOR);
-		Serial.print(counterA, DEC); // Motor C, B
+		Serial.print(counterA); // Motor C, B
 		Serial.print(SEPARATOR);
-		Serial.println(counterB, DEC); // Motor D, A
-		counterA = 0L;
-		counterB = 0L;
+		Serial.println(counterB); // Motor D, A
+		Serial.flush(); // Waits for the transmission of outgoing serial data to complete.
+		counterA = 0;
+		counterB = 0;
 		lastSampleTime = millis();
 	    sampleSequence++;
 	    if(sampleSequence >= SEQUENCE_MAX_SIZE) { // On gère manuellement le débordement

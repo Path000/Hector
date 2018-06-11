@@ -16,6 +16,14 @@
 #define PIN_DIR_D 5
 #define PIN_PWM_D 4
 
+#define DEMI_LARGEUR 0.13 //m
+#define DEMI_LONGUEUR 0.13 //m 
+
+// PWM 100% -> 280 fronts/100ms
+
+#define STRAFE_COEF 10
+#define ROTATION_COEF 10
+
 class Robot {
 	public:
 		void init();
@@ -28,7 +36,7 @@ class Robot {
 		PiloteMoteur* getMoteurB();
 		PiloteMoteur* getMoteurC();
 		PiloteMoteur* getMoteurD();
-		void stopMoteurs();
+		void computeMove(int strafeDirection, byte rotationDirection);
 	private:
 		BNOSensor _sensor;
 		Ecran _ecran;

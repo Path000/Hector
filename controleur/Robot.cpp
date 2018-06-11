@@ -17,7 +17,7 @@ void Robot::init() {
   _ecran.init();
   
   Serial1.begin(115200);
-  Serial1.setTimeout(500);
+  Serial1.setTimeout(1000);
   _compteur1.init(&Serial1);
   if(!Serial1) {
     Serial.print("Ooops, Serial1 port was not available !");
@@ -25,7 +25,7 @@ void Robot::init() {
   }
   
   Serial2.begin(115200);
-  Serial2.setTimeout(500);
+  Serial2.setTimeout(1000);
   _compteur2.init(&Serial2);
   if(!Serial2) {
     Serial.print("Ooops, Serial2 port was not available !");
@@ -33,11 +33,51 @@ void Robot::init() {
   }
 }
 
-void Robot::stopMoteurs() {
-  _moteurA.stop();
-  _moteurB.stop();
-  _moteurC.stop();
-  _moteurD.stop();
+
+// STOP : MOVE:-1:0
+// rotate : MOVE:-1:-1 OR MOVE:-1:1
+// strafe forward : MOVE:0:0
+// strafe left : MOVE:90:0
+// all : MOVE:0:1
+
+
+void Robot::computeMove(int strafeDirection, byte rotationDirection) {
+
+  _ecran.clear();
+  _ecran.set(0, String("Str.:")+String(strafeDirection));
+  _ecran.set(1, String("Rot.:")+String(rotationDirection));
+  _ecran.refresh();
+
+  _compteur1.resetSequence();
+  _compteur2.resetSequence();
+
+  // cmd arg rotation : direction (int) -1 | 0 | 1
+  double angularSpeed = ROTATION_COEF * rotationDirection * (DEMI_LARGEUR + DEMI_LONGUEUR);
+
+  double wA = angularSpeed;
+  double wB = -1*angularSpeed;
+  double wC = -1*angularSpeed;
+  double wD = angularSpeed;
+
+  // cmd arg strafe : (int) angle en degrés -1 means no strafe
+  if(strafeDirection >= 0) {
+    double strafeX = STRAFE_COEF * cos(strafeDirection * PI / 180);
+    double strafeY = STRAFE_COEF * sin(strafeDirection * PI / 180);
+    wA = strafeY - strafeX + wA;
+    wB = strafeY + strafeX + wB;
+    wC = strafeY - strafeX + wC;
+    wD = strafeY + strafeX + wD;
+  }
+
+  _moteurA.setCommand((wA>0)?true:false, long(wA));
+  _moteurB.setCommand((wB>0)?true:false, long(wB));
+  _moteurC.setCommand((wC>0)?true:false, long(wC));
+  _moteurD.setCommand((wD>0)?true:false, long(wD));
+
+  //_robot->getEcran()->set(2, String("A:")+String(long(wA))+String(" B:")+String(long(wB)));
+  //_robot->getEcran()->set(3, String("D:")+String(long(wD))+String(" C:")+String(long(wC)));
+  //_robot->getEcran()->refresh();
+
 }
 
 Command* Robot::getCommand() {

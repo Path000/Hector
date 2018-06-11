@@ -6,22 +6,20 @@
 #define COMMAND_SEPARATOR ':'
 #define MAX_ARGS 2
 
-typedef struct {
+struct ParsedCommandType {
+	boolean newCommandAvailable;
 	String cmd;
-	String arrayArgs[MAX_ARGS];
-} ParsedCommand;
+	int arrayArgs[MAX_ARGS];
+};
 
 class Command {
 	public:
 		void init(Stream* port);
-		boolean read();
-		ParsedCommand get();
+		ParsedCommandType* readIfAvailable();
 		void send(String message);
 	private:
 		Stream* _port;
-		ParsedCommand _parse();
-		String _inputString;
-		boolean _stringComplete;
+		ParsedCommandType _data;
 };
 
 

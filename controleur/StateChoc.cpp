@@ -6,12 +6,12 @@ void StateChoc::setStateIdle(StateIdle* stateIdle) {
 
 void StateChoc::onStart() {
 	_robot->getEcran()->clear();
-	for(int line=0; line<4; line++) _robot->getEcran()->set(line, "/!\\ Choc");
+	for(int line=0; line<4; line++) _robot->getEcran()->set(line, "!! Choc !!");
 	_robot->getEcran()->refresh();
 
-	_robot->stopMoteurs();
-
 	_robot->getCommand()->send("CHOC");
+
+	// TODO : rapsberry go oposite
 }
 
 State* StateChoc::run() {

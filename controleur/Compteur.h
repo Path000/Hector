@@ -17,13 +17,14 @@ struct SpeedSampleType {
 class Compteur {
   public:
     void init(Stream* port);
-    SpeedSampleType readIfAvailable(); // read and returns true if a sample of speed is ready to be used
+    SpeedSampleType* readIfAvailable(); // read and returns true if a sample of speed is ready to be used
     void resetSequence(); // used when a new move starts. It sync sequence sent by nano
   protected:
   private:
     Stream* _port;
     unsigned int _predictedSequence;
     boolean _firstSample;
+    SpeedSampleType _sampleData;
 };
 
 
