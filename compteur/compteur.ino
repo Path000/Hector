@@ -9,15 +9,12 @@
 #define SEPARATOR ':'
 #define SAMPLE_TIME 100 // ms
 
-#define SEQUENCE_MAX_SIZE 30000
-
 /*
 	Cette version n'est pas prévue pour l'odométrie.
 	Uniquement pour avoir une vitesse instantanée des roues.
 */
 
 unsigned long lastSampleTime;
-unsigned int sampleSequence;
 
 volatile unsigned int counterA = 0;
 volatile unsigned int counterB = 0;
@@ -47,8 +44,6 @@ void setup() {
 
 void loop() {
 	if(millis() - lastSampleTime >= SAMPLE_TIME) {
-    	Serial.print(sampleSequence);
-    	Serial.print(SEPARATOR);
 		Serial.print(counterA); // Motor C, B
 		Serial.print(SEPARATOR);
 		Serial.println(counterB); // Motor D, A
@@ -56,9 +51,5 @@ void loop() {
 		counterA = 0;
 		counterB = 0;
 		lastSampleTime = millis();
-	    sampleSequence++;
-	    if(sampleSequence >= SEQUENCE_MAX_SIZE) { // On gère manuellement le débordement
-	    	sampleSequence = 0;
-	    }
 	}
 }

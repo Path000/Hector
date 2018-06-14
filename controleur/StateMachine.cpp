@@ -32,12 +32,8 @@ void StateMachine::run() {
 	}
 
 	SpeedSampleType* compteur1 = _robot->getCompteur1()->readIfAvailable();
-	if (compteur1->newSampleAvailable) {
 
-    if (compteur1->deltaSequence > 0) {
-      Serial.print("SAMPLE LOST 1 : ");
-      Serial.println(compteur1->deltaSequence, DEC);
-    }
+	if (compteur1->newSampleAvailable) {
 
     _robot->getMoteurA()->setCurrentSpeed(compteur1->speed2);
     _robot->getMoteurB()->setCurrentSpeed(compteur1->speed1);
@@ -47,12 +43,8 @@ void StateMachine::run() {
   }
 
   SpeedSampleType* compteur2 = _robot->getCompteur2()->readIfAvailable();
+  
   if (compteur2->newSampleAvailable) {
-
-    if (compteur2->deltaSequence > 0) {
-      Serial.print("SAMPLE LOST 2 : ");
-      Serial.println(compteur1->deltaSequence, DEC);
-    }
 
     _robot->getMoteurC()->setCurrentSpeed(compteur2->speed1);
     _robot->getMoteurD()->setCurrentSpeed(compteur2->speed2);

@@ -48,9 +48,6 @@ void Robot::computeMove(int strafeDirection, byte rotationDirection) {
   _ecran.set(1, String("Rot.:")+String(rotationDirection));
   _ecran.refresh();
 
-  _compteur1.resetSequence();
-  _compteur2.resetSequence();
-
   // cmd arg rotation : direction (int) -1 | 0 | 1
   double angularSpeed = ROTATION_COEF * rotationDirection * (DEMI_LARGEUR + DEMI_LONGUEUR);
 
