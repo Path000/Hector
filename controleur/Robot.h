@@ -11,15 +11,13 @@
 #define PIN_PWM_A 8
 #define PIN_DIR_B 11
 #define PIN_PWM_B 10
-#define PIN_DIR_C 3
-#define PIN_PWM_C 2
-#define PIN_DIR_D 5
-#define PIN_PWM_D 4
+#define PIN_DIR_C 5
+#define PIN_PWM_C 4
+#define PIN_DIR_D 7
+#define PIN_PWM_D 6
 
 #define DEMI_LARGEUR 0.13 //m
 #define DEMI_LONGUEUR 0.13 //m 
-
-// PWM 100% -> 280 fronts/100ms
 
 #define STRAFE_COEF 10
 #define ROTATION_COEF 10
@@ -27,6 +25,7 @@
 class Robot {
 	public:
 		void init();
+		void emergencyStop();
 		Compteur* getCompteur1();
 		Compteur* getCompteur2();
 		Ecran* getEcran();

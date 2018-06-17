@@ -8,7 +8,7 @@
 #error("Height incorrect, please fix Adafruit_SSD1306.h!");
 #endif
 
-#define OLED_RESET 4
+#define OLED_RESET 3
 
 #define LINES 4
 

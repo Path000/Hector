@@ -19,6 +19,9 @@ unsigned long lastSampleTime;
 volatile unsigned int counterA = 0;
 volatile unsigned int counterB = 0;
 
+unsigned int sampleA = 0;
+unsigned int sampleB = 0;
+
 void interruptOnRaisingA() {
 	counterA++;
 }
@@ -39,17 +42,23 @@ void setup() {
 	attachInterrupt(digitalPinToInterrupt(PIN_ENC_B_CHAN_A), interruptOnRaisingB, RISING);
 
 	lastSampleTime = millis();
-	sampleSequence = 0;
 }
 
 void loop() {
 	if(millis() - lastSampleTime >= SAMPLE_TIME) {
-		Serial.print(counterA); // Motor C, B
-		Serial.print(SEPARATOR);
-		Serial.println(counterB); // Motor D, A
-		Serial.flush(); // Waits for the transmission of outgoing serial data to complete.
+		sampleA = counterA;
+		sampleB = counterB;
 		counterA = 0;
 		counterB = 0;
 		lastSampleTime = millis();
+	}
+
+	if(Serial.available() > 0) { // Trigger send with one octet. /!\ Arduino serial monitor sends more then one byte
+		Serial.read(); // vide le buffer
+		
+		Serial.print(sampleA); // Motor C, B
+		Serial.print(SEPARATOR);
+		Serial.println(sampleB); // Motor D, A
+		Serial.flush(); // Waits for the transmission of outgoing serial data to complete.
 	}
 }

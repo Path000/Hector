@@ -5,6 +5,7 @@ void StateWelcome::setStateIdle(StateIdle* stateIdle) {
 }
 
 void StateWelcome::onStart() {
+	_robot->getEcran()->clear();
 	_robot->getEcran()->set(0, "Hector");
 	_robot->getEcran()->set(1, " Hector");
 	_robot->getEcran()->set(2, "  Hector");
@@ -20,5 +21,4 @@ State* StateWelcome::run() {
 }
 
 void StateWelcome::onStop() {
-	_robot->getEcran()->clear();
 }

@@ -15,6 +15,7 @@ class Compteur {
   public:
     void init(Stream* port);
     SpeedSampleType* readIfAvailable(); // read and returns true if a sample of speed is ready to be used
+    void readyToRead();
   protected:
   private:
     Stream* _port;

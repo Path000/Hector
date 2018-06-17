@@ -6,8 +6,8 @@
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
 
-#define SENSITIVITY 2.0
-#define DEVIBRATE 5
+#define SENSITIVITY 3.0
+#define DEVIBRATE 10
 #define BNO055_SAMPLERATE_DELAY_MS 10
 
 class BNOSensor {

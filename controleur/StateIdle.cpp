@@ -1,6 +1,7 @@
 #include "StateIdle.h"
 
 void StateIdle::onStart() {
+	_robot->getEcran()->clear();
 	line = 0;
 	lastLineChange = millis();
 	writeLine();
@@ -23,5 +24,4 @@ State* StateIdle::run() {
 }
 
 void StateIdle::onStop() {
-	_robot->getEcran()->clear();
 }

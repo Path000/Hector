@@ -7,22 +7,25 @@ void PiloteMoteur::init(byte pinDir, byte pinPWM) {
 	pinMode(_pinPWM, OUTPUT);
 	setCommand(true, 0);
 	setCurrentSpeed(0);
-	update();
+	//update();
+	stop();
 
-	_Kp = 255/280;
+	_Kp = 255/MAX_SPEED;
 	_Ki = 1;
 	_Kd = 1;
 
+/*
 	PID aPid(&_input, &_output, &_setpoint, _Kp, _Ki, _Kd, DIRECT);
 	_pid = &aPid;
 	_pid->SetMode(AUTOMATIC);
 	_pid->SetOutputLimits(0, 255);
 	_pid->SetSampleTime(100);
+*/
 }
 
-void PiloteMoteur::setCommand(boolean directionRoue, long setpoint) {
+void PiloteMoteur::setCommand(boolean directionRoue, double setpoint) {
 	
-	_setpoint = (double)setpoint;
+	_setpoint = setpoint;
 	
 	if(directionRoue) {
 		digitalWrite(_pinDir, HIGH);
@@ -36,11 +39,20 @@ void PiloteMoteur::setCurrentSpeed(long vitesseMesuree) {
 	_input = (double)vitesseMesuree;
 }
 
-int PiloteMoteur::update() {
+boolean PiloteMoteur::update() {
 
-	_pid->Compute();
+	_output = _Kp * _setpoint;
 
-	analogWrite(_pinPWM, int(_output));
+	boolean computed = true; //_pid->Compute();
+	if(computed) {
+	Serial.println(constrain((int)_output, 0, 255));
 
-	return _output;
+		analogWrite(_pinPWM, constrain((int)_output, 0, 255));
+	}
+
+	return computed;
+}
+
+void PiloteMoteur::stop() {
+	analogWrite(_pinPWM, 0);
 }

@@ -9,9 +9,8 @@ void StateChoc::onStart() {
 	for(int line=0; line<4; line++) _robot->getEcran()->set(line, "!! Choc !!");
 	_robot->getEcran()->refresh();
 
-	_robot->getCommand()->send("CHOC");
-
-	// TODO : rapsberry go oposite
+  	_robot->emergencyStop();
+		_robot->getCommand()->send("CHOC");
 }
 
 State* StateChoc::run() {
@@ -22,5 +21,4 @@ State* StateChoc::run() {
 }
 
 void StateChoc::onStop() {
-	_robot->getEcran()->clear();
 }

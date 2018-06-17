@@ -4,6 +4,10 @@ void Compteur::init(Stream* port) {
   _port = port;
 }
 
+void Compteur::readyToRead() {
+  _port->write(1);
+}
+
 SpeedSampleType* Compteur::readIfAvailable() {
 
   

@@ -7,7 +7,7 @@
 #include "StateIdle.h"
 #include "StateWelcome.h"
 #include "StateChoc.h"
-#include "Compteur.h"
+#include "StateMove.h"
 
 class StateMachine {
 	public:
@@ -17,9 +17,11 @@ class StateMachine {
 	private:
 		Robot* _robot;
 		State* _currentState;
+		
 		StateIdle _stateIdle;
 		StateChoc _stateChoc;
 		StateWelcome _stateWelcome;
+		StateMove _stateMove;
 };
 
 

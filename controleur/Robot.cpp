@@ -12,6 +12,33 @@ void Robot::init() {
   _moteurC.init(PIN_DIR_C, PIN_PWM_C);
   _moteurD.init(PIN_DIR_D, PIN_PWM_D);
 
+/*
+  digitalWrite(PIN_DIR_A, HIGH);
+  analogWrite(PIN_PWM_A, 20);
+  delay(500);
+  digitalWrite(PIN_DIR_A, LOW);
+  delay(500);
+
+  digitalWrite(PIN_DIR_B, HIGH);
+  analogWrite(PIN_PWM_B, 20);
+  delay(500);
+  digitalWrite(PIN_DIR_B, LOW);
+  delay(500);
+
+  digitalWrite(PIN_DIR_C, HIGH);
+  analogWrite(PIN_PWM_C, 20);
+  delay(500);
+  digitalWrite(PIN_DIR_C, LOW);
+  delay(500);
+
+  digitalWrite(PIN_DIR_D, HIGH);
+  analogWrite(PIN_PWM_D, 20);
+  delay(500);
+  digitalWrite(PIN_DIR_D, LOW);
+  delay(500);
+
+  emergencyStop();
+*/
   _sensor.init();
   
   _ecran.init();
@@ -33,6 +60,15 @@ void Robot::init() {
   }
 }
 
+void Robot::emergencyStop() {
+  _moteurA.stop();
+  _moteurB.stop();
+  _moteurC.stop();
+  _moteurD.stop();
+}
+
+// TODO : put that computation in raspberry
+
 
 // STOP : MOVE:-1:0
 // rotate : MOVE:-1:-1 OR MOVE:-1:1
@@ -43,11 +79,6 @@ void Robot::init() {
 
 void Robot::computeMove(int strafeDirection, byte rotationDirection) {
 
-  _ecran.clear();
-  _ecran.set(0, String("Str.:")+String(strafeDirection));
-  _ecran.set(1, String("Rot.:")+String(rotationDirection));
-  _ecran.refresh();
-
   // cmd arg rotation : direction (int) -1 | 0 | 1
   double angularSpeed = ROTATION_COEF * rotationDirection * (DEMI_LARGEUR + DEMI_LONGUEUR);
 
@@ -55,6 +86,7 @@ void Robot::computeMove(int strafeDirection, byte rotationDirection) {
   double wB = -1*angularSpeed;
   double wC = -1*angularSpeed;
   double wD = angularSpeed;
+
 
   // cmd arg strafe : (int) angle en degrés -1 means no strafe
   if(strafeDirection >= 0) {
@@ -66,15 +98,15 @@ void Robot::computeMove(int strafeDirection, byte rotationDirection) {
     wD = strafeY + strafeX + wD;
   }
 
-  _moteurA.setCommand((wA>0)?true:false, long(wA));
-  _moteurB.setCommand((wB>0)?true:false, long(wB));
-  _moteurC.setCommand((wC>0)?true:false, long(wC));
-  _moteurD.setCommand((wD>0)?true:false, long(wD));
+  wA = 30.0;
+  wB = 30.0;
+  wC = 30.0;
+  wD = 30.0;
 
-  //_robot->getEcran()->set(2, String("A:")+String(long(wA))+String(" B:")+String(long(wB)));
-  //_robot->getEcran()->set(3, String("D:")+String(long(wD))+String(" C:")+String(long(wC)));
-  //_robot->getEcran()->refresh();
-
+  _moteurA.setCommand((wA>0)?true:false, wA);
+  _moteurB.setCommand((wB>0)?true:false, wB);
+  _moteurC.setCommand((wC>0)?true:false, wC);
+  _moteurD.setCommand((wD>0)?true:false, wD);
 }
 
 Command* Robot::getCommand() {
