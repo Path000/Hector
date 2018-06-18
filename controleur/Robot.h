@@ -16,11 +16,13 @@
 #define PIN_DIR_D 7
 #define PIN_PWM_D 6
 
+// PWM 100% -> 280 fronts/100ms
+
 #define DEMI_LARGEUR 0.13 //m
 #define DEMI_LONGUEUR 0.13 //m 
 
-#define STRAFE_COEF 10
-#define ROTATION_COEF 10
+#define STRAFE_COEF 20
+#define ROTATION_COEF 20
 
 class Robot {
 	public:

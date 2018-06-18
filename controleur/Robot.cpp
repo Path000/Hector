@@ -7,10 +7,10 @@ void Robot::init() {
   while (!Serial); // wait for serial port to connect. Needed for native USB
   _command.init(&Serial);
 
-  _moteurA.init(PIN_DIR_A, PIN_PWM_A);
-  _moteurB.init(PIN_DIR_B, PIN_PWM_B);
-  _moteurC.init(PIN_DIR_C, PIN_PWM_C);
-  _moteurD.init(PIN_DIR_D, PIN_PWM_D);
+  _moteurA.init(PIN_DIR_A, PIN_PWM_A, "A");
+  _moteurB.init(PIN_DIR_B, PIN_PWM_B, "B");
+  _moteurC.init(PIN_DIR_C, PIN_PWM_C, "C");
+  _moteurD.init(PIN_DIR_D, PIN_PWM_D, "D");
 
 /*
   digitalWrite(PIN_DIR_A, HIGH);
@@ -67,41 +67,33 @@ void Robot::emergencyStop() {
   _moteurD.stop();
 }
 
-// TODO : put that computation in raspberry
+// STOP :            MOVE:-1:0
+// rotate :          MOVE:-1:-1
+// rotate :          MOVE:-1:1
+// strafe forward :  MOVE:0:0
+// strafe left :     MOVE:90:0
+// starfe + rotate : MOVE:0:1
 
-
-// STOP : MOVE:-1:0
-// rotate : MOVE:-1:-1 OR MOVE:-1:1
-// strafe forward : MOVE:0:0
-// strafe left : MOVE:90:0
-// all : MOVE:0:1
-
-
-void Robot::computeMove(int strafeDirection, byte rotationDirection) {
+void Robot::computeMove(int strafeDirection, byte rotationDirection) { // TODO : put that computation in raspberry
 
   // cmd arg rotation : direction (int) -1 | 0 | 1
-  double angularSpeed = ROTATION_COEF * rotationDirection * (DEMI_LARGEUR + DEMI_LONGUEUR);
+  double angularSpeed = (double)ROTATION_COEF * (double)rotationDirection * (double)(DEMI_LARGEUR + DEMI_LONGUEUR);
 
   double wA = angularSpeed;
-  double wB = -1*angularSpeed;
-  double wC = -1*angularSpeed;
+  double wB = -1.0*angularSpeed;
+  double wC = -1.0*angularSpeed;
   double wD = angularSpeed;
 
 
   // cmd arg strafe : (int) angle en degrés -1 means no strafe
   if(strafeDirection >= 0) {
-    double strafeX = STRAFE_COEF * cos(strafeDirection * PI / 180);
-    double strafeY = STRAFE_COEF * sin(strafeDirection * PI / 180);
+    double strafeX = (double)STRAFE_COEF * cos(strafeDirection * (double)PI / (double)180);
+    double strafeY = (double)STRAFE_COEF * sin(strafeDirection * (double)PI / (double)180);
     wA = strafeY - strafeX + wA;
     wB = strafeY + strafeX + wB;
     wC = strafeY - strafeX + wC;
     wD = strafeY + strafeX + wD;
   }
-
-  wA = 30.0;
-  wB = 30.0;
-  wC = 30.0;
-  wD = 30.0;
 
   _moteurA.setCommand((wA>0)?true:false, wA);
   _moteurB.setCommand((wB>0)?true:false, wB);

@@ -28,7 +28,13 @@ void StateMachine::run() {
 	ParsedCommandType* command = _robot->getCommand()->readIfAvailable();
 
 	if (command->newCommandAvailable) {
-		
+
+		Serial.print(command->cmd);
+		Serial.print(":");
+		Serial.print(command->arrayArgs[0]);
+		Serial.print(":");
+		Serial.println(command->arrayArgs[1]);
+
 		if(command->cmd == "MOVE") {
 
 			_stateMove.setData(command->arrayArgs[0], command->arrayArgs[1]);

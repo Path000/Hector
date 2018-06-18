@@ -4,11 +4,11 @@
 #define MAX_SPEED 280 // PWM 100% -> 280 fronts/100ms
 
 #include <Arduino.h>
-//#include "PID.h"
+#include "PID.h"
 
 class PiloteMoteur {
 	public :
-		void init(byte pinDir, byte pinPWM);
+		void init(byte pinDir, byte pinPWM, String whoami);
 		void setCommand(boolean directionRoue, double setpoint);
 		void setCurrentSpeed(long vitesseMesuree);
 		boolean update();
@@ -22,7 +22,8 @@ class PiloteMoteur {
 		double _Kp;
 		double _Ki;
 		double _Kd;
-		//PID* _pid;
+		PID* _pid;
+		String _whoami;
 };
 
 #endif
