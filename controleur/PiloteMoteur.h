@@ -1,29 +1,31 @@
 #ifndef PiloteMoteur_h
 #define PiloteMoteur_h
 
-#define MAX_SPEED 280 // PWM 100% -> 280 fronts/100ms
-
 #include <Arduino.h>
 #include "PID.h"
+
+#define COMPUTE_PERIOD 100 // ms
 
 class PiloteMoteur {
 	public :
 		void init(byte pinDir, byte pinPWM, String whoami);
-		void setCommand(boolean directionRoue, double setpoint);
-		void setCurrentSpeed(long vitesseMesuree);
+		void setSetPoint(boolean directionRoue, unsigned int setpoint);
+		void setInput(unsigned int vitesseMesuree);
 		boolean update();
 		void stop();
 	private :
 		byte _pinDir;
 		byte _pinPWM;
-		double _setpoint;
-		double _input;
-		double _output;
-		double _Kp;
-		double _Ki;
-		double _Kd;
-		PID* _pid;
+		unsigned int _setpoint;
+		unsigned int _input;
+		float _Kp;
+		float _Ki;
+		float _Kd;
+		//PID* _pid;
 		String _whoami;
+		unsigned long _lastComputedTime;
+		unsigned int _lastInput;
+		double _outputSum;
 };
 
 #endif

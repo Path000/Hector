@@ -25,7 +25,7 @@ void StateMachine::changeState(State* newState) {
 
 void StateMachine::run() {
 
-	ParsedCommandType* command = _robot->getCommand()->readIfAvailable();
+	ParsedCommandType* command = _robot->_command.readIfAvailable();
 
 	if (command->newCommandAvailable) {
 
@@ -43,7 +43,7 @@ void StateMachine::run() {
 		}
 	}
 
-  if(_robot->getSensor()->detectImpact()) {
+  if(_robot->_sensor.detectImpact()) {
 
     changeState(&_stateChoc);
   }

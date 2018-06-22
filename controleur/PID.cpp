@@ -60,8 +60,14 @@ bool PID::Compute()
    if(!inAuto) return false;
    unsigned long now = millis();
    unsigned long timeChange = (now - lastTime);
-   if(timeChange>=SampleTime)
-   {
+
+   Serial.print(" now:");
+   Serial.print(now);
+
+   Serial.print(" lastTime:");
+   Serial.print(lastTime);
+
+   if(timeChange>=SampleTime) {
       /*Compute all the working error variables*/
       double input = *myInput;
       double error = *mySetpoint - input;
@@ -91,7 +97,7 @@ bool PID::Compute()
       lastTime = now;
 	    return true;
    }
-   else return false;
+   return false;
 }
 
 /* SetTunings(...)*************************************************************

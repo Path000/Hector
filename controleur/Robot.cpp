@@ -13,6 +13,8 @@ void Robot::init() {
   _moteurD.init(PIN_DIR_D, PIN_PWM_D, "D");
 
 /*
+  // Test moteurs
+
   digitalWrite(PIN_DIR_A, HIGH);
   analogWrite(PIN_PWM_A, 20);
   delay(500);
@@ -84,7 +86,6 @@ void Robot::computeMove(int strafeDirection, byte rotationDirection) { // TODO :
   double wC = -1.0*angularSpeed;
   double wD = angularSpeed;
 
-
   // cmd arg strafe : (int) angle en degrés -1 means no strafe
   if(strafeDirection >= 0) {
     double strafeX = (double)STRAFE_COEF * cos(strafeDirection * (double)PI / (double)180);
@@ -95,44 +96,8 @@ void Robot::computeMove(int strafeDirection, byte rotationDirection) { // TODO :
     wD = strafeY + strafeX + wD;
   }
 
-  _moteurA.setCommand((wA>0)?true:false, wA);
-  _moteurB.setCommand((wB>0)?true:false, wB);
-  _moteurC.setCommand((wC>0)?true:false, wC);
-  _moteurD.setCommand((wD>0)?true:false, wD);
-}
-
-Command* Robot::getCommand() {
-  return &_command;
-}
-
-Compteur* Robot::getCompteur1() {
-  return &_compteur1;
-}
-
-Compteur* Robot::getCompteur2() {
-	return &_compteur2;
-}
-
-Ecran* Robot::getEcran() {
-	return &_ecran;
-}
-
-BNOSensor* Robot::getSensor() {
-	return &_sensor;
-}
-
-PiloteMoteur* Robot::getMoteurA() {
-  return &_moteurA;
-}
-
-PiloteMoteur* Robot::getMoteurB() {
-  return &_moteurB;
-}
-
-PiloteMoteur* Robot::getMoteurC() {
-  return &_moteurC;
-}
-
-PiloteMoteur* Robot::getMoteurD() {
-  return &_moteurD;
+  _moteurA.setSetPoint((wA>0)?true:false, wA);
+  _moteurB.setSetPoint((wB>0)?true:false, wB);
+  _moteurC.setSetPoint((wC>0)?true:false, wC);
+  _moteurD.setSetPoint((wD>0)?true:false, wD);
 }

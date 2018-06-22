@@ -5,12 +5,12 @@ void StateChoc::setStateIdle(StateIdle* stateIdle) {
 }
 
 void StateChoc::onStart() {
-	_robot->getEcran()->clear();
-	for(int line=0; line<4; line++) _robot->getEcran()->set(line, "!! Choc !!");
-	_robot->getEcran()->refresh();
+	_robot->_ecran.clear();
+	for(int line=0; line<4; line++) _robot->_ecran.set(line, "!! Choc !!");
+	_robot->_ecran.refresh();
 
   	_robot->emergencyStop();
-		_robot->getCommand()->send("CHOC");
+		_robot->_command.send("CHOC");
 }
 
 State* StateChoc::run() {

@@ -28,17 +28,8 @@ class Robot {
 	public:
 		void init();
 		void emergencyStop();
-		Compteur* getCompteur1();
-		Compteur* getCompteur2();
-		Ecran* getEcran();
-		BNOSensor* getSensor();
-		Command* getCommand();
-		PiloteMoteur* getMoteurA();
-		PiloteMoteur* getMoteurB();
-		PiloteMoteur* getMoteurC();
-		PiloteMoteur* getMoteurD();
 		void computeMove(int strafeDirection, byte rotationDirection);
-	private:
+		
 		BNOSensor _sensor;
 		Ecran _ecran;
 		Compteur _compteur1; // Compteur A et B
@@ -48,6 +39,7 @@ class Robot {
 		PiloteMoteur _moteurB;
 		PiloteMoteur _moteurC;
 		PiloteMoteur _moteurD;
+	private:
 };
 
 

@@ -1,16 +1,16 @@
 #include "StateIdle.h"
 
 void StateIdle::onStart() {
-	_robot->getEcran()->clear();
+	_robot->_ecran.clear();
 	line = 0;
 	lastLineChange = millis();
 	writeLine();
 }
 
 void StateIdle::writeLine() {
-	_robot->getEcran()->clear();
-	_robot->getEcran()->set(line, "Idle");
-	_robot->getEcran()->refresh();
+	_robot->_ecran.clear();
+	_robot->_ecran.set(line, "Idle");
+	_robot->_ecran.refresh();
 }
 
 State* StateIdle::run() {
@@ -18,7 +18,7 @@ State* StateIdle::run() {
 		line = (line+1)%4;
 		writeLine();
 		lastLineChange = millis();
-		_robot->getCommand()->send("READY");
+		_robot->_command.send("READY");
 	}
 	return NULL;
 }

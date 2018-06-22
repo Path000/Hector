@@ -19,8 +19,8 @@ unsigned long lastSampleTime;
 volatile unsigned int counterA = 0;
 volatile unsigned int counterB = 0;
 
-unsigned int sampleA = 0;
-unsigned int sampleB = 0;
+unsigned int speed1 = 0;
+unsigned int speed2 = 0;
 
 void interruptOnRaisingA() {
 	counterA++;
@@ -46,8 +46,8 @@ void setup() {
 
 void loop() {
 	if(millis() - lastSampleTime >= SAMPLE_TIME) {
-		sampleA = counterA;
-		sampleB = counterB;
+		speed1 = counterA;
+		speed2 = counterB;
 		counterA = 0;
 		counterB = 0;
 		lastSampleTime = millis();
@@ -56,9 +56,9 @@ void loop() {
 	if(Serial.available() > 0) { // Trigger send with one octet. /!\ Arduino serial monitor sends more then one byte
 		Serial.read(); // vide le buffer
 		
-		Serial.print(sampleA); // Motor C, B
+		Serial.print(speed1); // Motor C, B
 		Serial.print(SEPARATOR);
-		Serial.println(sampleB); // Motor D, A
+		Serial.println(speed2); // Motor D, A
 		Serial.flush(); // Waits for the transmission of outgoing serial data to complete.
 	}
 }
