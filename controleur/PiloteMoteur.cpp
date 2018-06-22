@@ -60,7 +60,7 @@ boolean PiloteMoteur::update() {
 		if(_outputSum < 0.0) _outputSum = 0.0;
 		if(_outputSum > 255.0) _outputSum = 255.0;
 
-		double outputAsDouble = _Kp * (double)error + _outputSum - (_Kd * (double)dInput);
+		double outputAsDouble = (_Kp * (double)error) + _outputSum - (_Kd * (double)dInput);
 
 		int output = constrain((int)outputAsDouble, 0, 255);
 
