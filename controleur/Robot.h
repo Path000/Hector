@@ -29,6 +29,8 @@ class Robot {
 		void init();
 		void stopMotors();
 		void computeMove(int strafeDirection, int rotationDirection);
+		void setPID(float Kp, float Ki, float Kd);
+
 
 		BNOSensor _sensor;
 		Ecran _ecran;

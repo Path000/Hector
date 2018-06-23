@@ -23,7 +23,7 @@ State* StateMove::run() {
 
 	unsigned long now = millis();
 
-	if((now - _lastRefresh) > REFRESH_DELAY) {
+	if((now - _lastRefresh) > UPDATE_PID_PERIOD) {
 
 		_lastRefresh = now;
 

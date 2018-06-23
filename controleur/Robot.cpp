@@ -106,3 +106,10 @@ void Robot::computeMove(int strafeDirection, int rotationDirection) { // TODO : 
   _moteurC.setCommand((int)wC);
   _moteurD.setCommand((int)wD);
 }
+
+void Robot::setPID(float Kp, float Ki, float Kd) {
+  _moteurA.setPID(Kp, Ki, Kd);
+  _moteurB.setPID(Kp, Ki, Kd);
+  _moteurC.setPID(Kp, Ki, Kd);
+  _moteurD.setPID(Kp, Ki, Kd);
+}

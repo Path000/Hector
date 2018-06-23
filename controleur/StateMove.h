@@ -6,7 +6,7 @@
 
 #include "Compteur.h"
 
-#define REFRESH_DELAY 100
+#define UPDATE_PID_PERIOD 100
 
 class StateMove : public State {
 	public:

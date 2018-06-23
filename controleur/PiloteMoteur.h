@@ -10,6 +10,7 @@ class PiloteMoteur {
 		void setSpeedSample(unsigned int vitesseMesuree);
 		void update();
 		void stop();
+		void setPID(float Kp, float Ki, float Kd);
 	private :
 		byte _pinDir;
 		byte _pinPWM;

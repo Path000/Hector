@@ -7,20 +7,27 @@ void PiloteMoteur::init(byte pinDir, byte pinPWM, String whoami) {
 	pinMode(_pinDir, OUTPUT);
 	pinMode(_pinPWM, OUTPUT);
 
-	_Kp = 0.8;
-	_Ki = 10.0;
-	_Kd = 0.1;
+	_Kp = 0.0;
+	_Ki = 0.0;
+	_Kd = 0.0;
 	
-	setCommand(0);
-	setSpeedSample(0);
-	_outputSum = 0.0;
-	stop();
+	reset();
 
 	//PID aPid(&_input, &_output, &_setpoint, _Kp, _Ki, _Kd, DIRECT);
 	//_pid = &aPid;
 	//_pid->SetOutputLimits(0.0, 255.0);
 	//_pid->SetSampleTime(100);
 	//_pid->SetMode(AUTOMATIC);
+}
+
+void PiloteMoteur::reset() {
+
+	setCommand(0);
+	setSpeedSample(0);
+	_outputSum = 0.0;
+	_lastInput = 0;
+	
+	stop();
 }
 
 void PiloteMoteur::setCommand(int command) {
@@ -47,6 +54,7 @@ void PiloteMoteur::update() {
 
 	int error = _setpoint - _input;
 	int dInput = _input - _lastInput;
+	_lastInput = _input;
 
 	_outputSum += _Ki * (double)error;
 
@@ -58,11 +66,16 @@ void PiloteMoteur::update() {
 	//byte output = constrain((int)outputAsDouble, 0, 255);
 	byte output = constrain((int)_setpoint, 0, 255);
 
-	_lastInput = _input;
-
 	analogWrite(_pinPWM, output);
 }
 
 void PiloteMoteur::stop() {
 	analogWrite(_pinPWM, 0);
+}
+
+void PiloteMoteur::setPID(float Kp, float Ki, float Kd) {
+	_Kp = Kp;
+	_Ki = Ki;
+	_Kd = Kd;
+	reset();
 }
