@@ -20,5 +20,3 @@ State* StateWelcome::run() {
 	return NULL;
 }
 
-void StateWelcome::onStop() {
-}

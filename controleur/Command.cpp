@@ -32,7 +32,7 @@ ParsedCommandType* Command::readIfAvailable() {
 		}
 		String arg = inputString.substring(firstSep+1, secondSep);
 		firstSep = secondSep;
-		_data.arrayArgs[index] = arg.toInt();
+		_data.arrayArgs[index] = arg;
 		index++;
 	}
 	

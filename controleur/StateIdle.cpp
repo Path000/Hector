@@ -22,6 +22,3 @@ State* StateIdle::run() {
 	}
 	return NULL;
 }
-
-void StateIdle::onStop() {
-}

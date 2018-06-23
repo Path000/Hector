@@ -5,13 +5,12 @@
 #include "State.h"
 #include "Robot.h"
 
-#define LINE_CHANGE_DELAY 500
+#define LINE_CHANGE_DELAY 1000
 
 class StateIdle : public State {
 	public:
 		void onStart();
 		State* run();
-		void onStop();
 	private:
 		byte line;
 		unsigned long lastLineChange;

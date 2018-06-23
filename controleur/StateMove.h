@@ -6,17 +6,14 @@
 
 #include "Compteur.h"
 
-#define REFRESH_DELAY 1000
+#define REFRESH_DELAY 100
 
 class StateMove : public State {
 	public:
 		void onStart();
 		State* run();
-		void onStop();
-		void setData(int strafeDirection, byte rotationDirection);
+		void setData(String strafeDirection, String rotationDirection);
 	private:
-		int _strafeDirection;
-		byte _rotationDirection;
 		unsigned long _lastRefresh;
 };
 

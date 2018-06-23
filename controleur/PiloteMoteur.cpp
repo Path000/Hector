@@ -8,12 +8,11 @@ void PiloteMoteur::init(byte pinDir, byte pinPWM, String whoami) {
 	pinMode(_pinPWM, OUTPUT);
 
 	_Kp = 0.8;
-	_Ki = 0.2;
-	_Kd = 0.2;
+	_Ki = 10.0;
+	_Kd = 0.1;
 	
-	setSetPoint(true, 0);
-	setInput(0);
-	_lastComputedTime = millis();
+	setCommand(0);
+	setSpeedSample(0);
 	_outputSum = 0.0;
 	stop();
 
@@ -24,58 +23,44 @@ void PiloteMoteur::init(byte pinDir, byte pinPWM, String whoami) {
 	//_pid->SetMode(AUTOMATIC);
 }
 
-void PiloteMoteur::setSetPoint(boolean directionRoue, unsigned int setpoint) {
+void PiloteMoteur::setCommand(int command) {
 	
-	_setpoint = setpoint;
-	
-	if(directionRoue) {
+	if(command >= 0) {
 		digitalWrite(_pinDir, HIGH);
 	}
 	else {
 		digitalWrite(_pinDir, LOW);
 	}
 
+	_setpoint = abs(command);
+	
 	Serial.print(_whoami);
-	Serial.print(" set:");
-	Serial.println(_setpoint, 2);
+	Serial.print(": cmd:");
+	Serial.println(_setpoint);
 }
 
-void PiloteMoteur::setInput(unsigned int vitesseMesuree) {
+void PiloteMoteur::setSpeedSample(unsigned int vitesseMesuree) {
 	_input = vitesseMesuree;
 }
 
-boolean PiloteMoteur::update() {
+void PiloteMoteur::update() {
 
-	Serial.print(_whoami);
-	
-	unsigned long now = millis();
+	int error = _setpoint - _input;
+	int dInput = _input - _lastInput;
 
-	if(now - _lastComputedTime > COMPUTE_PERIOD) {
+	_outputSum += _Ki * (double)error;
 
-		int error = _setpoint - _input;
-		int dInput = _input - _lastInput;
+	if(_outputSum < 0.0) _outputSum = 0.0;
+	if(_outputSum > 255.0) _outputSum = 255.0;
 
-		_outputSum += _Ki * (double)error;
+	double outputAsDouble = (_Kp * (double)error) + _outputSum - (_Kd * (double)dInput);
 
-		if(_outputSum < 0.0) _outputSum = 0.0;
-		if(_outputSum > 255.0) _outputSum = 255.0;
+	//byte output = constrain((int)outputAsDouble, 0, 255);
+	byte output = constrain((int)_setpoint, 0, 255);
 
-		double outputAsDouble = (_Kp * (double)error) + _outputSum - (_Kd * (double)dInput);
+	_lastInput = _input;
 
-		int output = constrain((int)outputAsDouble, 0, 255);
-
-		_lastInput = _input;
-		_lastComputedTime = now;
-
-		analogWrite(_pinPWM, output);
-
-		Serial.print(" out:");
-		Serial.print(output);
-
-		return true;
-	}
-
-	return false;
+	analogWrite(_pinPWM, output);
 }
 
 void PiloteMoteur::stop() {

@@ -1,12 +1,12 @@
-#ifndef StateWelcome_h
-#define StateWelcome_h
+#ifndef StateStop_h
+#define StateStop_h
 
 #include "State.h"
 #include "StateIdle.h"
 
-#define WELCOME_DELAY 1000
+#define DISPLAY_STOP_DELAY 1000
 
-class StateWelcome : public State {
+class StateStop : public State {
 	public:
 		void onStart();
 		State* run();

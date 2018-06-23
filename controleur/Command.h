@@ -9,7 +9,7 @@
 struct ParsedCommandType {
 	boolean newCommandAvailable;
 	String cmd;
-	int arrayArgs[MAX_ARGS];
+	String arrayArgs[MAX_ARGS];
 };
 
 class Command {

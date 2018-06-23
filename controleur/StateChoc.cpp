@@ -9,8 +9,8 @@ void StateChoc::onStart() {
 	for(int line=0; line<4; line++) _robot->_ecran.set(line, "!! Choc !!");
 	_robot->_ecran.refresh();
 
-  	_robot->emergencyStop();
-		_robot->_command.send("CHOC");
+  _robot->stopMotors();
+	_robot->_command.send("CHOC");
 }
 
 State* StateChoc::run() {
@@ -20,5 +20,3 @@ State* StateChoc::run() {
 	return NULL;
 }
 
-void StateChoc::onStop() {
-}

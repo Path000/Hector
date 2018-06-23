@@ -39,7 +39,7 @@ void Robot::init() {
   digitalWrite(PIN_DIR_D, LOW);
   delay(500);
 
-  emergencyStop();
+  stopMotors();
 */
   _sensor.init();
   
@@ -62,7 +62,7 @@ void Robot::init() {
   }
 }
 
-void Robot::emergencyStop() {
+void Robot::stopMotors() {
   _moteurA.stop();
   _moteurB.stop();
   _moteurC.stop();
@@ -76,28 +76,33 @@ void Robot::emergencyStop() {
 // strafe left :     MOVE:90:0
 // starfe + rotate : MOVE:0:1
 
-void Robot::computeMove(int strafeDirection, byte rotationDirection) { // TODO : put that computation in raspberry
+void Robot::computeMove(int strafeDirection, int rotationDirection) { // TODO : put that computation in raspberry
+
+  double wA = 0.0;
+  double wB = 0.0;
+  double wC = 0.0;
+  double wD = 0.0;
 
   // cmd arg rotation : direction (int) -1 | 0 | 1
-  double angularSpeed = (double)ROTATION_COEF * (double)rotationDirection * (double)(DEMI_LARGEUR + DEMI_LONGUEUR);
+  double angularSpeed = ROTATION_COEF * (double)rotationDirection * (double)(DEMI_LARGEUR + DEMI_LONGUEUR);
 
-  double wA = angularSpeed;
-  double wB = -1.0*angularSpeed;
-  double wC = -1.0*angularSpeed;
-  double wD = angularSpeed;
+  wA = angularSpeed;
+  wB = angularSpeed;
+  wC = angularSpeed;
+  wD = angularSpeed;
 
   // cmd arg strafe : (int) angle en degrés -1 means no strafe
   if(strafeDirection >= 0) {
-    double strafeX = (double)STRAFE_COEF * cos(strafeDirection * (double)PI / (double)180);
-    double strafeY = (double)STRAFE_COEF * sin(strafeDirection * (double)PI / (double)180);
-    wA = strafeY - strafeX + wA;
+    double strafeX = STRAFE_COEF * cos(strafeDirection * (double)PI / (double)180);
+    double strafeY = STRAFE_COEF * sin(strafeDirection * (double)PI / (double)180);
+    wA = -strafeY + strafeX + wA;
     wB = strafeY + strafeX + wB;
     wC = strafeY - strafeX + wC;
-    wD = strafeY + strafeX + wD;
+    wD = -strafeY - strafeX + wD;
   }
 
-  _moteurA.setSetPoint((wA>0)?true:false, wA);
-  _moteurB.setSetPoint((wB>0)?true:false, wB);
-  _moteurC.setSetPoint((wC>0)?true:false, wC);
-  _moteurD.setSetPoint((wD>0)?true:false, wD);
+  _moteurA.setCommand((int)wA);
+  _moteurB.setCommand((int)wB);
+  _moteurC.setCommand((int)wC);
+  _moteurD.setCommand((int)wD);
 }

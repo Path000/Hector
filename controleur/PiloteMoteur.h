@@ -2,16 +2,13 @@
 #define PiloteMoteur_h
 
 #include <Arduino.h>
-#include "PID.h"
-
-#define COMPUTE_PERIOD 100 // ms
 
 class PiloteMoteur {
 	public :
 		void init(byte pinDir, byte pinPWM, String whoami);
-		void setSetPoint(boolean directionRoue, unsigned int setpoint);
-		void setInput(unsigned int vitesseMesuree);
-		boolean update();
+		void setCommand(int command);
+		void setSpeedSample(unsigned int vitesseMesuree);
+		void update();
 		void stop();
 	private :
 		byte _pinDir;
@@ -21,9 +18,7 @@ class PiloteMoteur {
 		float _Kp;
 		float _Ki;
 		float _Kd;
-		//PID* _pid;
 		String _whoami;
-		unsigned long _lastComputedTime;
 		unsigned int _lastInput;
 		double _outputSum;
 };

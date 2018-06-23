@@ -10,7 +10,6 @@ class StateChoc : public State {
 	public:
 		void onStart();
 		State* run();
-		void onStop();
 		void setStateIdle(StateIdle* stateIdle);
 	private:
 		StateIdle* _stateIdle;

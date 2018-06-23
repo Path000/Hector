@@ -21,15 +21,15 @@
 #define DEMI_LARGEUR 0.13 //m
 #define DEMI_LONGUEUR 0.13 //m 
 
-#define STRAFE_COEF 20
-#define ROTATION_COEF 20
+#define STRAFE_COEF 20.0
+#define ROTATION_COEF 90.0
 
 class Robot {
 	public:
 		void init();
-		void emergencyStop();
-		void computeMove(int strafeDirection, byte rotationDirection);
-		
+		void stopMotors();
+		void computeMove(int strafeDirection, int rotationDirection);
+
 		BNOSensor _sensor;
 		Ecran _ecran;
 		Compteur _compteur1; // Compteur A et B
