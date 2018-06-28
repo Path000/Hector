@@ -16,12 +16,10 @@
 #define PIN_DIR_D 7
 #define PIN_PWM_D 6
 
-// PWM 100% -> 280 fronts/100ms
-
 #define DEMI_LARGEUR 0.13 //m
 #define DEMI_LONGUEUR 0.13 //m 
 
-#define STRAFE_COEF 20.0
+#define STRAFE_COEF 30.0
 #define ROTATION_COEF 90.0
 
 class Robot {
@@ -29,8 +27,6 @@ class Robot {
 		void init();
 		void stopMotors();
 		void computeMove(int strafeDirection, int rotationDirection);
-		void setPID(float Kp, float Ki, float Kd);
-
 
 		BNOSensor _sensor;
 		Ecran _ecran;

@@ -38,11 +38,9 @@ State* StateMove::run() {
     _robot->_ecran.set(2, String("A:")+String(compteur1->speed2)+String(" B:")+String(compteur1->speed1));
     _robot->_ecran.refresh();
 
-    _robot->_moteurA.setSpeedSample(compteur1->speed2);
-    _robot->_moteurA.update();
+    _robot->_moteurA.update(compteur1->speed2, duration());
 
-    _robot->_moteurB.setSpeedSample(compteur1->speed1);
-    _robot->_moteurB.update();
+    _robot->_moteurB.update(compteur1->speed1, duration());
   }
 
   SpeedSampleType* compteur2 = _robot->_compteur2.readIfAvailable();
@@ -52,11 +50,9 @@ State* StateMove::run() {
 		_robot->_ecran.set(3, String("D:")+String(compteur2->speed2)+String(" C:")+String(compteur2->speed1));
 		_robot->_ecran.refresh();
 
-    _robot->_moteurC.setSpeedSample(compteur2->speed1);
-    _robot->_moteurC.update();
+    _robot->_moteurC.update(compteur2->speed1, duration());
 
-    _robot->_moteurD.setSpeedSample(compteur2->speed2);
-    _robot->_moteurD.update();
+    _robot->_moteurD.update(compteur2->speed2, duration());
   }
 
   return NULL;

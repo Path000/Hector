@@ -44,11 +44,6 @@ void StateMachine::run() {
 
 			changeState(&_stateStop);
 		}
-
-		if(command->cmd == "PID") {
-
-			
-		}
 	}
 
   if(_robot->_sensor.detectImpact()) {

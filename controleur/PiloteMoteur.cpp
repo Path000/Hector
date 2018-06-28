@@ -7,27 +7,10 @@ void PiloteMoteur::init(byte pinDir, byte pinPWM, String whoami) {
 	pinMode(_pinDir, OUTPUT);
 	pinMode(_pinPWM, OUTPUT);
 
-	_Kp = 0.0;
-	_Ki = 0.0;
-	_Kd = 0.0;
-	
-	reset();
-
-	//PID aPid(&_input, &_output, &_setpoint, _Kp, _Ki, _Kd, DIRECT);
-	//_pid = &aPid;
-	//_pid->SetOutputLimits(0.0, 255.0);
-	//_pid->SetSampleTime(100);
-	//_pid->SetMode(AUTOMATIC);
-}
-
-void PiloteMoteur::reset() {
-
 	setCommand(0);
-	setSpeedSample(0);
-	_outputSum = 0.0;
-	_lastInput = 0;
 	
 	stop();
+
 }
 
 void PiloteMoteur::setCommand(int command) {
@@ -46,36 +29,31 @@ void PiloteMoteur::setCommand(int command) {
 	Serial.println(_setpoint);
 }
 
-void PiloteMoteur::setSpeedSample(unsigned int vitesseMesuree) {
-	_input = vitesseMesuree;
-}
+// TODO mesuer la vitesse à 255 au démarrage du robot
 
-void PiloteMoteur::update() {
+void PiloteMoteur::update(unsigned int vitesseMesuree, unsigned int duration) {
 
-	int error = _setpoint - _input;
-	int dInput = _input - _lastInput;
-	_lastInput = _input;
+	float output = (float)_setpoint * 255.0 / 280.0; // PWM 100% -> 280 fronts/100ms
 
-	_outputSum += _Ki * (double)error;
+	if( duration < 3000) { // On accélère sur 3s de 0 à output
 
-	if(_outputSum < 0.0) _outputSum = 0.0;
-	if(_outputSum > 255.0) _outputSum = 255.0;
+		output = output * duration / 3000;
+	}
+	else { // On gère une correction proportionnelle basée sur l'erreur
 
-	double outputAsDouble = (_Kp * (double)error) + _outputSum - (_Kd * (double)dInput);
+		float errorRatio = 0;
+		if(_setpoint > 0) {
+			errorRatio = (_setpoint - vitesseMesuree) / _setpoint * 255.0 / 280.0;
+		}
+		
+		output = output + (output * errorRatio);
+	}
+	
+	byte command = constrain((int)output, 0, 255);
 
-	//byte output = constrain((int)outputAsDouble, 0, 255);
-	byte output = constrain((int)_setpoint, 0, 255);
-
-	analogWrite(_pinPWM, output);
+	analogWrite(_pinPWM, command);
 }
 
 void PiloteMoteur::stop() {
 	analogWrite(_pinPWM, 0);
-}
-
-void PiloteMoteur::setPID(float Kp, float Ki, float Kd) {
-	_Kp = Kp;
-	_Ki = Ki;
-	_Kd = Kd;
-	reset();
 }
