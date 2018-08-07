@@ -24,14 +24,18 @@ void PiloteMoteur::setCommand(int command) {
 
 	_setpoint = abs(command);
 	
-	Serial.print(_whoami);
-	Serial.print(": cmd:");
-	Serial.println(_setpoint);
+	//Serial.print(_whoami);
+	//Serial.print(": cmd:");
+	//Serial.println(_setpoint);
 }
 
 // TODO mesuer la vitesse à 255 au démarrage du robot
 
 void PiloteMoteur::update(unsigned int vitesseMesuree, unsigned int duration) {
+
+	Serial.print(vitesseMesuree, DEC);
+	Serial.print(",");
+	Serial.println(_setpoint, DEC);
 
 	float output = (float)_setpoint * 255.0 / 280.0; // PWM 100% -> 280 fronts/100ms
 

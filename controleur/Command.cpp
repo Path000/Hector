@@ -40,5 +40,5 @@ ParsedCommandType* Command::readIfAvailable() {
 }
 
 void Command::send(String message) {
-	_port->println(message);
+	//_port->println(message);
 }
