@@ -133,6 +133,7 @@ class RPLidar {
 void RPLidar::stopScanning() {
 	// arrête le scan du lidar
 	Serial1.write(requestStop, 2);
+	delay(10);
 }
 
 void RPLidar::startMotor() {
@@ -151,6 +152,10 @@ void RPLidar::startScan() {
 
 	scanIndex = 0;
 	scanIndexTop = 0;
+
+	stopScanning();
+	// Empty RX buffer
+	while(Serial1.available()) Serial1.read();
 
 	status.reset();
 
