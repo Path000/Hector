@@ -11,16 +11,27 @@
 
 */
 
-
-#include "Robot.h"
+#include "Ecran.h"
+#include "RPLidar.h"
 #include "StateMachine.h"
 
-Robot robot;
+Ecran ecran;
+RPLidar lidar;
 StateMachine stateMachine;
 
 void setup() {
 
-	robot.init();
+  // Serial : 0 (RX) and 1 (TX) => Debug USB
+  Serial.begin(115200);
+
+  // Serial 1: 19 (RX) and 18 (TX) => RP Lidar
+  Serial1.begin(115200);
+  while(!Serial1);
+  Serial1.setTimeout(3000);
+
+  ecran.init();
+
+  stateMachine.init();
 }
 
 void loop() {

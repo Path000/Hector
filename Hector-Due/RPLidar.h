@@ -13,6 +13,10 @@
 // 60% PWM => 0.9° resolution at 10Hz => 400 scan / turn (refering doc)
 #define SAMPLE_BY_REVOLUTION 500
 
+/* =================================================================================
+ * STRUCTS
+ * =================================================================================*/
+
 struct HeadStruct {
 	int8_t sync1; // New packet marker
 	int8_t sync2;
@@ -36,6 +40,12 @@ struct ScanStruct {
 	int16_t y;
 };
 
+
+
+/* =================================================================================
+ * MOTOR
+ * =================================================================================*/
+
 #include "pwm_lib.h"
 using namespace arduino_due::pwm_lib;
 
@@ -44,17 +54,39 @@ using namespace arduino_due::pwm_lib;
 #define PWM_PERIOD_PIN_6 4000 // hundredth of usecs (1e-8 secs)
 #define PWM_DUTY_PIN_6 2400 // hundredth of usecs (1e-8 secs)
 
+/* =================================================================================
+ * RPLIDAR STATUS
+ * =================================================================================*/
+
+#define RPL_STATUS_CONTINUE 0
+#define RPL_STATUS_STOP 1
+#define RPL_STATUS_ERROR 2
+
+class RPLStatus {
+	public :
+		uint8_t code;
+		const char* message;
+		void reset() {
+			code = RPL_STATUS_CONTINUE;
+			message = "";
+		}
+};
+
+/* =================================================================================
+ * RPLIDAR PARSER
+ * =================================================================================*/
+
 class RPLidar {
 	public :
 		// returns error message if error
 		// returns NULL if no error
-		const char* startScan();
-		const char* loopScan();
+		void startScan();
+		void loopScan();
 		void stopScanning();
 		void startMotor();
 		void stopMotor();
 		// indicates if a complete turn is done
-		bool revolution = false;
+		RPLStatus status;
 	private :
 		// RX buffer
 		uint8_t RXResponseHeadBuffer[RESPONSE_HEAD_SIZE];
@@ -85,12 +117,12 @@ class RPLidar {
 		float lastAngle = 0;
 		float currentAngle = 0;
 
-		const char* pushScan(uint16_t distance);
+		void pushScan(uint16_t distance);
 		float computeAngle(uint8_t k, float angle1, float angle2, float delta);
 		float angleDiff(float angle1, float angle2);
 		void parseCabin(uint8_t cabinNumber);
 		void parseHead();
-	  	const char* getHealth();
+	  	void getHealth();
 
 		// pour le driver moteur
 		pwm<pwm_pin::PWML7_PC24> pwm_pin6;
@@ -113,10 +145,12 @@ void RPLidar::stopMotor() {
 	pwm_pin6.stop();
 }
 
-const char* RPLidar::startScan() {
+void RPLidar::startScan() {
 
-	const char* errorMessage = getHealth();
-	if(errorMessage) return errorMessage;
+	status.reset();
+
+	getHealth();
+	if(status.code != RPL_STATUS_CONTINUE) return;
 
 	// Send express scan header
 	Serial1.write(requestExpressScan, 9);
@@ -124,45 +158,56 @@ const char* RPLidar::startScan() {
 	// read response
 	// test number of bytes read
 	if(Serial1.readBytes(RXResponseHeadBuffer, RESPONSE_HEAD_SIZE) != RESPONSE_HEAD_SIZE) {
-		return "Timeout while reading express scan response head";
+		status.code = RPL_STATUS_ERROR;
+		status.message = "Timeout while reading express scan response head";
+		return;
 	}
 	// test response head value
 	for(uint8_t i = 0; i < RESPONSE_HEAD_SIZE; i++) {
 		if(responseHeadExpressScan[i] != RXResponseHeadBuffer[i]) {
-			return "Wrong express scan response head";
+			status.code = RPL_STATUS_ERROR;
+			status.message = "Wrong express scan response head";
+			return;
 		}
 	}
 
 	/* */ //Serial.println("");
 	// read 1st cabin head
 	if(Serial1.readBytes(RXCabinHeadBuffer, CABIN_HEAD_SIZE) != CABIN_HEAD_SIZE) {
-		return "Timeout while reading cabin head";
+		status.code = RPL_STATUS_ERROR;
+		status.message = "Timeout while reading cabin head";
+		return;
 	}
 
 	parseHead();
 
 	if(head.sync1 != 0xA || head.sync2 != 0x5) {
-		return "First two bytes should be 0xA 0x5";
+		status.code = RPL_STATUS_ERROR;
+		status.message = "First two bytes should be 0xA 0x5";
+		return;
 	}
-
-	return NULL;
 }
 
-const char* RPLidar::loopScan() {
+void RPLidar::loopScan() {
 
-	revolution = false;
+	status.reset();
 
 	if(Serial1.available() < CABINS_SIZE + CABIN_HEAD_SIZE) {
-		return NULL;
+		status.code = RPL_STATUS_CONTINUE;
+		return;
 	}
 
 	// read cabins
 	if(Serial1.readBytes(RXCabinPacketBuffer, CABINS_SIZE) != CABINS_SIZE) {
-		return "Timeout while reading cabin";
+		status.code = RPL_STATUS_ERROR;
+		status.message = "Timeout while reading cabin";
+		return;
 	}
 	// read next head needed by angle computation
 	if(Serial1.readBytes(RXCabinHeadBuffer, CABIN_HEAD_SIZE) != CABIN_HEAD_SIZE) {
-		return "Timeout while reading cabin head";
+		status.code = RPL_STATUS_ERROR;
+		status.message = "Timeout while reading cabin head";
+		return;
 	}
 
 	// preserve current values from head
@@ -175,7 +220,9 @@ const char* RPLidar::loopScan() {
 	// Now head contains next header values.
 
 	if(head.sync1 != 0xA || head.sync2 != 0x5) {
-		return "First two bytes of head should be a new packet";
+		status.code = RPL_STATUS_ERROR;
+		status.message = "First two bytes of head should be a new packet";
+		return;
 	}
 
 	for(uint8_t cabinNumber = 0; cabinNumber < 16; cabinNumber++) {
@@ -183,39 +230,47 @@ const char* RPLidar::loopScan() {
 		parseCabin(cabinNumber);
 
 		computeAngle(cabinNumber*2, startAngle, head.startAngle, cabin.deltaAngle1);
-		const char* errorMessage = pushScan(cabin.distance1);
-		if(errorMessage) return errorMessage;
+		pushScan(cabin.distance1);
+		if(status.code != RPL_STATUS_CONTINUE) return;
 
 		computeAngle(cabinNumber*2+1, startAngle, head.startAngle, cabin.deltaAngle2);
-		errorMessage = pushScan(cabin.distance2);
-		if(errorMessage) return errorMessage;
+		pushScan(cabin.distance2);
+		if(status.code != RPL_STATUS_CONTINUE) return;
 	}
 
 	if(sum != checkSum) {
-		return "Wrong checkSum";
+		status.code = RPL_STATUS_ERROR;
+		status.message = "Wrong checkSum";
+		return;
 	}
 }
 
-const char* RPLidar::getHealth() {
+void RPLidar::getHealth() {
 
 	// Send get health
 	Serial1.write(requestGetHealth, 2);
 
 	// read head
 	if(Serial1.readBytes(RXResponseHeadBuffer, RESPONSE_HEAD_SIZE) != RESPONSE_HEAD_SIZE) {
-		return "Timeout while reading get health response head";
+		status.code = RPL_STATUS_ERROR;
+		status.message = "Timeout while reading get health response head";
+		return;
 	}
 
 	// test response head value
 	for(uint8_t i = 0; i < RESPONSE_HEAD_SIZE; i++) {
 		if(responseHeadGetHealth[i] != RXResponseHeadBuffer[i]) {
-			return "Wrong get health response head";
+			status.code = RPL_STATUS_ERROR;
+			status.message = "Wrong get health response head";
+			return;
 		}
 	}
 
 	// read body
 	if(Serial1.readBytes(RXHealthBuffer, HEALTH_SIZE) != HEALTH_SIZE){
-		return "Timeout while reading get health response head";
+		status.code = RPL_STATUS_ERROR;
+		status.message = "Timeout while reading get health response head";
+		return;
 	}
 
 	uint8_t healthStatus = RXHealthBuffer[0];
@@ -225,12 +280,12 @@ const char* RPLidar::getHealth() {
 	//Serial.print("Health err code : ");
 	//Serial.println(healthCode);
 	if(healthStatus != 0) {
-		return "Health problem";
+		status.code = RPL_STATUS_ERROR;
+		status.message = "Health problem";
+		return;
 	}
 
 	delay(10);
-
-	return NULL;
 }
 
 void RPLidar::parseHead() {
@@ -288,26 +343,31 @@ float RPLidar::computeAngle(uint8_t k, float angle1, float angle2, float delta) 
 	currentAngle = angle1 - delta + (angleDiff(angle1, angle2) * k / 32);
 }
 
-const char* RPLidar::pushScan(uint16_t distance) {
+void RPLidar::pushScan(uint16_t distance) {
 
 	if(lastAngle - currentAngle > 300) {
 		scanIndexTop = scanIndex;
 		scanIndex = 0;
-		revolution = true;
+
+		// TODO reset for a next scan
+
+		status.code = RPL_STATUS_STOP;
+		return;
 	}
 	lastAngle = currentAngle;
 
 	scanPtr = &scans[scanIndex];
 	scanIndex++;
 	if(scanIndex >= SAMPLE_BY_REVOLUTION) {
-		return "ScanIndex overflow !!";
+		status.code = RPL_STATUS_ERROR;
+		status.message = "ScanIndex overflow !!";
+		return;
 	}
 
 	scanPtr->distance = distance;
 	scanPtr->angle = currentAngle;
 	scanPtr->x = distance * cos(currentAngle * 3.14159/180);
 	scanPtr->y = distance * sin(currentAngle * 3.14159/180);
-
 }
 
 

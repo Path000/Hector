@@ -1,7 +1,7 @@
 #ifndef StateMachine_h
 #define StateMachine_h
 
-#define WELCOME_DELAY 10000
+#define STARTING_DELAY 10000
 #define COMPUTING_DELAY 3000
 #define LINE_CHANGE_DELAY 1000
 
@@ -54,10 +54,10 @@ class StateMachine {
 		void changeState(State* state);
 		void run();
 
-		StateError _stateError;
-		StateStartingUp _stateStartingUp;
-		StateScanning _stateScanning;
-		StateComputing _stateComputing;
+		StateError stateError;
+		StateStartingUp stateStartingUp;
+		StateScanning stateScanning;
+		StateComputing stateComputing;
 
 	private:
 		State* _currentState;
@@ -67,8 +67,10 @@ class StateMachine {
  * static variable declared in main INO file
  * =================================================================================*/
 
-#include "Robot.h"
-extern Robot robot;
+#include "Ecran.h"
+#include "RPLidar.h"
+extern RPLidar lidar;
+extern Ecran ecran;
 extern StateMachine stateMachine;
 
 /* =================================================================================
@@ -89,19 +91,20 @@ unsigned long State::duration() {
  * =================================================================================*/
 
 void StateStartingUp::onStart() {
-	robot._ecran.clear();
-	robot._ecran.set(0, "HECTOR");
-	robot._ecran.set(1, "Bonjour !!");
-	robot._ecran.set(2, "");
-	robot._ecran.set(3, "");
-	robot._ecran.refresh();
+	ecran.clear();
+	ecran.set(0, "HECTOR");
+	ecran.set(1, "Bonjour !!");
+	ecran.set(2, "");
+	ecran.set(3, "");
+	ecran.refresh();
 
-	robot._lidar.startMotor();
+	// Start rotating and waits for speed stability
+	lidar.startMotor();
 }
 
 void StateStartingUp::run() {
-	if (duration() > WELCOME_DELAY) {
-		stateMachine.changeState((State*)&stateMachine._stateScanning);
+	if (duration() > STARTING_DELAY) {
+		stateMachine.changeState((State*)&stateMachine.stateScanning);
 	}
 }
 
@@ -112,30 +115,38 @@ void StateStartingUp::run() {
 
 void StateScanning::onStart() {
 
-	robot._ecran.clear();
-	robot._ecran.set(0, "SCANNING");
-	robot._ecran.refresh();
+	ecran.clear();
+	ecran.set(0, "SCANNING");
+	ecran.refresh();
 
-	const char* errorMessage = robot._lidar.startScan();
+	lidar.startScan();
 
-	if(errorMessage) {
-		stateMachine._stateError.setMessage(errorMessage);
-		stateMachine.changeState((State*)&stateMachine._stateError);
+	if(lidar.status.code == RPL_STATUS_ERROR) {
+		stateMachine.stateError.setMessage(lidar.status.message);
+		stateMachine.changeState((State*) &stateMachine.stateError);
 	}
 }
 
 void StateScanning::run() {
 
-	const char* errorMessage = robot._lidar.loopScan();
+	lidar.loopScan();
 
-	if(errorMessage) {
-		stateMachine._stateError.setMessage(errorMessage);
-		stateMachine.changeState((State*)&stateMachine._stateError);
-		return;
-	}
+	switch(lidar.status.code) {
 
-	if(robot._lidar.revolution) {
-		stateMachine.changeState((State*)&stateMachine._stateComputing);
+		case RPL_STATUS_ERROR :
+
+			stateMachine.stateError.setMessage(lidar.status.message);
+			stateMachine.changeState((State*) &stateMachine.stateError);
+			break;
+
+		case RPL_STATUS_STOP :
+
+			stateMachine.changeState((State*) &stateMachine.stateComputing);
+			break;
+
+		case RPL_STATUS_CONTINUE :
+		default :
+			break;
 	}
 }
 
@@ -146,16 +157,16 @@ void StateScanning::run() {
 
 void StateComputing::onStart() {
 
-	robot._ecran.clear();
-	robot._ecran.set(0, "COMPUTING");
-	robot._ecran.refresh();
+	ecran.clear();
+	ecran.set(0, "COMPUTING");
+	ecran.refresh();
 }
 
 void StateComputing::run() {
 
 	if (duration() > COMPUTING_DELAY) {
 
-		stateMachine.changeState((State*)&stateMachine._stateScanning);
+		stateMachine.changeState((State*) &stateMachine.stateScanning);
 	}
 }
 
@@ -167,8 +178,8 @@ void StateComputing::run() {
 
 void StateError::onStart() {
 
-	robot._lidar.stopMotor();
-	robot._lidar.stopScanning();
+	lidar.stopMotor();
+	lidar.stopScanning();
 
 	_line = 0;
 	_lastLineChange = millis();
@@ -180,9 +191,9 @@ void StateError::setMessage(const char* message) {
 }
 
 void StateError::writeLine() {
-	robot._ecran.clear();
-	robot._ecran.set(_line, _message);
-	robot._ecran.refresh();
+	ecran.clear();
+	ecran.set(_line, _message);
+	ecran.refresh();
 }
 
 void StateError::run() {
@@ -202,7 +213,7 @@ void StateError::run() {
 
 void StateMachine::init() {
 
-	changeState((State*)&_stateStartingUp);
+	changeState((State*) &stateStartingUp);
 }
 
 void StateMachine::changeState(State* newState) {
