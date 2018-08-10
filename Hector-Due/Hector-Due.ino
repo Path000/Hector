@@ -1,6 +1,7 @@
 /*
 ----- PIN MAPPING -----
-
+0	RX0
+1 	TX0 debug via USB
 6	RPLidar MOTOCTL (PWM 25kHz)
 3	Display RESET
 13	LED_BUILTIN
@@ -21,10 +22,8 @@ StateMachine stateMachine;
 
 void setup() {
 
-  // Serial : 0 (RX) and 1 (TX) => Debug USB
   Serial.begin(115200);
 
-  // Serial 1: 19 (RX) and 18 (TX) => RP Lidar
   Serial1.begin(115200);
   while(!Serial1);
   Serial1.setTimeout(3000);
@@ -36,7 +35,7 @@ void setup() {
 
 void loop() {
 
-	Serial.println(Serial1.available());
+	//Serial.println(Serial1.available());
 
 	stateMachine.run();
 }

@@ -163,8 +163,13 @@ void StateComputing::onStart() {
 	ecran.clear();
 
 	for(uint16_t i = 0; i < lidar.scanIndexTop; i++) {
+		//Serial.print("SCAN:");
+		//Serial.print(lidar.scans[i].distance);
+		//Serial.print(":");
+		//Serial.println(lidar.scans[i].angle);
 		ecran.pixel(map(lidar.scans[i].x, -8000, 8000, 0, 63)+64, map(lidar.scans[i].y, -8000, 8000, 0, 63));
 	}
+	ecran.showPixels();
 }
 
 void StateComputing::run() {

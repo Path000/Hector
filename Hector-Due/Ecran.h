@@ -18,6 +18,7 @@ class Ecran {
     void set(byte ligne, String text);
     void refresh();
     void pixel(uint8_t x, uint8_t y);
+    void showPixels();
   private:
     String displayedBuffer[NB_LINES];
 };
@@ -57,6 +58,9 @@ void Ecran::clear() {
 void Ecran::pixel(uint8_t x, uint8_t y) {
 
   display.drawPixel(x, y, WHITE);
+}
+
+void Ecran::showPixels() {
   display.display();
 }
 

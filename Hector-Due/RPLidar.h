@@ -152,6 +152,7 @@ void RPLidar::startScan() {
 
 	scanIndex = 0;
 	scanIndexTop = 0;
+	lastAngle = 0;
 
 	stopScanning();
 	// Empty RX buffer
@@ -354,7 +355,7 @@ float RPLidar::computeAngle(uint8_t k, float angle1, float angle2, float delta) 
 }
 
 void RPLidar::pushScan(uint16_t distance) {
-
+/*
 	if(lastAngle - currentAngle > 300) {
 		scanIndexTop = scanIndex;
 
@@ -363,19 +364,26 @@ void RPLidar::pushScan(uint16_t distance) {
 		return;
 	}
 	lastAngle = currentAngle;
-
+*/
 	scanPtr = &scans[scanIndex];
-	scanIndex++;
-	if(scanIndex >= SAMPLE_BY_REVOLUTION) {
-		status.code = RPL_STATUS_ERROR;
-		status.message = "ScanIndex overflow !!";
-		return;
-	}
+
+	if(currentAngle >= 360) currentAngle = 360 - currentAngle;
+	if(currentAngle < 0) currentAngle = 360 + currentAngle;
 
 	scanPtr->distance = distance;
 	scanPtr->angle = currentAngle;
 	scanPtr->x = distance * cos(currentAngle * 3.14159/180);
 	scanPtr->y = distance * sin(currentAngle * 3.14159/180);
+
+	scanIndex++;
+	if(scanIndex >= SAMPLE_BY_REVOLUTION) {
+		scanIndexTop = scanIndex;
+		status.code = RPL_STATUS_STOP;
+		return;
+		//status.code = RPL_STATUS_ERROR;
+		//status.message = "ScanIndex overflow !!";
+		//return;
+	}
 }
 
 
