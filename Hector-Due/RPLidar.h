@@ -87,6 +87,9 @@ class RPLidar {
 		void stopMotor();
 		// indicates if a complete turn is done
 		RPLStatus status;
+
+		ScanStruct scans[SAMPLE_BY_REVOLUTION];
+		uint16_t scanIndexTop = 0;
 	private :
 		// RX buffer
 		uint8_t RXResponseHeadBuffer[RESPONSE_HEAD_SIZE];
@@ -110,10 +113,9 @@ class RPLidar {
 		uint8_t checkSum;
 		uint8_t sum;
 
-		ScanStruct scans[SAMPLE_BY_REVOLUTION];
 		ScanStruct* scanPtr;
 		uint16_t scanIndex = 0;
-		uint16_t scanIndexTop = 0;
+
 		float lastAngle = 0;
 		float currentAngle = 0;
 
@@ -146,6 +148,9 @@ void RPLidar::stopMotor() {
 }
 
 void RPLidar::startScan() {
+
+	scanIndex = 0;
+	scanIndexTop = 0;
 
 	status.reset();
 
@@ -347,10 +352,8 @@ void RPLidar::pushScan(uint16_t distance) {
 
 	if(lastAngle - currentAngle > 300) {
 		scanIndexTop = scanIndex;
-		scanIndex = 0;
 
-		// TODO reset for a next scan
-
+		// scan should restart with startscan();
 		status.code = RPL_STATUS_STOP;
 		return;
 	}

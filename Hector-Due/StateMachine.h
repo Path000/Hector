@@ -135,12 +135,15 @@ void StateScanning::run() {
 
 		case RPL_STATUS_ERROR :
 
+			lidar.stopScanning();
+			lidar.stopMotor();
 			stateMachine.stateError.setMessage(lidar.status.message);
 			stateMachine.changeState((State*) &stateMachine.stateError);
 			break;
 
 		case RPL_STATUS_STOP :
 
+			lidar.stopScanning();
 			stateMachine.changeState((State*) &stateMachine.stateComputing);
 			break;
 
@@ -158,8 +161,10 @@ void StateScanning::run() {
 void StateComputing::onStart() {
 
 	ecran.clear();
-	ecran.set(0, "COMPUTING");
-	ecran.refresh();
+
+	for(uint16_t i = 0; i < lidar.scanIndexTop; i++) {
+		ecran.pixel(map(lidar.scans[i].x, -8000, 8000, 0, 63)+64, map(lidar.scans[i].y, -8000, 8000, 0, 63));
+	}
 }
 
 void StateComputing::run() {
@@ -178,12 +183,8 @@ void StateComputing::run() {
 
 void StateError::onStart() {
 
-	lidar.stopMotor();
-	lidar.stopScanning();
-
 	_line = 0;
 	_lastLineChange = millis();
-	writeLine();
 }
 
 void StateError::setMessage(const char* message) {
@@ -198,8 +199,8 @@ void StateError::writeLine() {
 
 void StateError::run() {
 	if(millis() - _lastLineChange > LINE_CHANGE_DELAY) {
-		_line = (_line+1)%8;
 		writeLine();
+		_line = (_line+1)%8;
 		_lastLineChange = millis();
 	}
 }
