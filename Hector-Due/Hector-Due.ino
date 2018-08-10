@@ -11,7 +11,7 @@
 
 */
 
-#include <Arduino.h>
+
 #include "Robot.h"
 #include "StateMachine.h"
 
@@ -21,7 +21,6 @@ StateMachine stateMachine;
 void setup() {
 
 	robot.init();
-	stateMachine.init(&robot);
 }
 
 void loop() {
