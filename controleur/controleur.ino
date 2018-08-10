@@ -8,13 +8,13 @@ Robot robot;
 StateMachine stateMachine;
 
 void setup() {
-  
+
   robot.init();
 
   stateMachine.init(&robot);
 }
 
 void loop() {
-  
+
   stateMachine.run();
 }
