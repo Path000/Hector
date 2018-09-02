@@ -10,4 +10,4 @@ const gpioPinNumberDirB = 22;
 
 const steppers = new StepperMotors(gpioPinNumberPulse, gpioPinNumberDirA, gpioPinNumberDirB, done, 200);
 
-steppers.forward(200);
+steppers.forward(500);
