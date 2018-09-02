@@ -85,7 +85,7 @@ class StepperMotors {
 			return;
 		}
 
-		console.log("stepToGo:" + this._stepToGo + " stepPeriod:" + this._stepPeriod);
+		//console.log("stepToGo:" + this._stepToGo + " stepPeriod:" + this._stepPeriod);
 
 		// pulseLen (micro seconds) should be < pulse period => period > 100us
 		// trigger level to 1
