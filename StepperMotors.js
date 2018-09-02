@@ -36,6 +36,11 @@ class StepperMotors {
 		// constant accel in 2 revolutions
 		this._deltaT = (this._maxPeriod - this._minPeriod) / (2 * stepsPerRevolution);
 
+		console.log("stepsPerRevolution : " + this._stepsPerRevolution);
+		console.log("_maxPeriod : " + this._maxPeriod);
+		console.log("_minPeriod : " + this._minPeriod);
+		console.log("_deltaT : " + this._deltaT);
+
 		this._stepToGo = 0;
 		this._moveTimeoutHandler = null;
 		this._stepPeriod = this._maxPeriod;
