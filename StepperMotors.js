@@ -28,8 +28,8 @@ class StepperMotors {
 		*/
 
 		this._stepsPerRevolution = stepsPerRevolution;
-		this._maxPeriod = 60000 / stepsPerRevolution; // 1 rev in 60s -> 1 rpm -> 18,75 ms at 1/16 step
-		this._minPeriod = 20000 / stepsPerRevolution; // 1 rev in 20s -> 3 rpm -> 6,25 ms at 1/16 step
+		this._maxPeriod = 10000 / stepsPerRevolution; // 1 rev in 10s
+		this._minPeriod = 5000 / stepsPerRevolution; // 1 rev in 5s
 
 		// dela t between min and max period for 2 revolutions
 		// constant accel in 2 revolutions
@@ -95,9 +95,10 @@ class StepperMotors {
 			this._moveAStep();
 		}, this._stepPeriod);
 
-		// compute period
-		// decrease speed at the end minus 2 revolutions
+		// compute period accell
+		// at 2 revolution from the end
 		if (this._stepToGo < this._stepsPerRevolution * 2) {
+			// decrease speed at the end minus 2 revolutions
 			if (this._stepPeriod < this._maxPeriod) {
 				this._stepPeriod += this._deltaT;
 			}
