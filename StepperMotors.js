@@ -25,7 +25,6 @@ class StepperMotors {
 		/*
 			full step : 200 / revolution
 			1/16 step : 3200 / revolution
-
 		*/
 
 		this._stepsPerRevolution = stepsPerRevolution;
@@ -85,6 +84,9 @@ class StepperMotors {
 			this._stepsDoneCB();
 			return;
 		}
+
+		console.log("stepToGo:" + this._stepToGo + " stepPeriod:" + this._stepPeriod);
+
 		// pulseLen (micro seconds) should be < pulse period => period > 100us
 		// trigger level to 1
 		this._gpioPulse.trigger(100, 1);
