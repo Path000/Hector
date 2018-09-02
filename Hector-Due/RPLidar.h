@@ -120,7 +120,7 @@ class RPLidar {
 		float currentAngle = 0;
 
 		void pushScan(uint16_t distance);
-		float computeAngle(uint8_t k, float angle1, float angle2, float delta);
+		void computeAngle(uint8_t k, float angle1, float angle2, float delta);
 		float angleDiff(float angle1, float angle2);
 		void parseCabin(uint8_t cabinNumber);
 		void parseHead();
@@ -349,7 +349,7 @@ float RPLidar::angleDiff(float angle1, float angle2) {
 	return (360 + angle2 - angle1);
 }
 
-float RPLidar::computeAngle(uint8_t k, float angle1, float angle2, float delta) {
+void RPLidar::computeAngle(uint8_t k, float angle1, float angle2, float delta) {
 
 	currentAngle = angle1 - delta + (angleDiff(angle1, angle2) * k / 32);
 }

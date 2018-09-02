@@ -44,7 +44,7 @@ void Ecran::refresh() {
 
 void Ecran::set(byte ligne, String text) {
 
-  displayedBuffer[constrain(ligne, 0, NB_LINES-1)] = text;
+  displayedBuffer[ligne] = text;
 }
 
 void Ecran::clear() {
